@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Alibee.online — The Sweetest AliExpress Deals</title>
+  <meta name="description" content="Alibee.online curates the hottest AliExpress offers so you can snag the sweetest deals fast." />
+  <meta property="og:title" content="Alibee.online — The Sweetest AliExpress Deals" />
+  <meta property="og:description" content="Curated, blazing-hot AliExpress offers. No endless scrolling—just amazing finds." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#FFD166" />
+
+  <link rel="preload" href="assets/logo.png" as="image" />
+  <link rel="preload" href="assets/honeycomb.svg" as="image" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Animated honeycomb background -->
+  <div class="bg" aria-hidden="true">
+    <img src="assets/honeycomb.svg" alt="" class="bg__honeycomb" />
+  </div>
+
+  <main class="wrap">
+    <header class="brand">
+      <img src="assets/logo.png" alt="Alibee logo" class="brand__logo" width="72" height="72" />
+      <h1 class="brand__title">Alibee<span class="dot">.online</span></h1>
+    </header>
+
+    <section class="hero">
+      <h2 class="hero__headline">The <span class="accent">sweetest</span> AliExpress deals.</h2>
+      <p class="hero__sub">
+        We’re curating the <strong>best and hottest offers</strong> so you can make
+        <em>wonderful</em> deals—without the hunt.
+      </p>
+
+      <form class="waitlist" id="waitlist" method="post" novalidate>
+        <label class="sr-only" for="email">Email address</label>
+        <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Enter your email" required />
+        <!-- Honeypot field (hidden by CSS) -->
+        <input type="text" name="hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <button class="btn" type="submit" aria-label="Join the waitlist for Alibee">Join the Waitlist</button>
+        <p class="waitlist__notice" hidden></p>
+      </form>
+
+      <div class="points">
+        <div class="card">
+          <div class="card__icon" aria-hidden="true">💎</div>
+          <h3>Curated Heat</h3>
+          <p>Daily hottest finds—no endless scrolling.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon" aria-hidden="true">⚡</div>
+          <h3>Fast Savings</h3>
+          <p>Catch time-sensitive drops before they’re gone.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon" aria-hidden="true">🛡️</div>
+          <h3>Signal, Not Noise</h3>
+          <p>Only quality offers make the cut.</p>
+        </div>
+      </div>
+
+      <nav class="social" aria-label="Alibee social links">
+        <a href="#" aria-label="X">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M18.244 2H21l-6.53 7.46L22.5 22h-6.87l-4.59-6.38L5.6 22H2.84l7.04-8.04L1.5 2h6.9l4.17 5.82L18.24 2Zm-2.4 18h1.82L7.31 4H5.5l10.343 16Z" /></svg>
+        </a>
+        <a href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6.01 4.9.07 1.2.06 2 .25 2.46.42.62.24 1.06.53 1.52.99.46.46.75.9.99 1.52.17.46.36 1.26.42 2.46.06 1.3.07 1.7.07 4.9s-.01 3.6-.07 4.9c-.06 1.2-.25 2-.42 2.46a3.9 3.9 0 0 1-.99 1.52 3.9 3.9 0 0 1-1.52.99c-.46.17-1.26.36-2.46.42-1.3.06-1.7.07-4.9.07s-3.6-.01-4.9-.07c-1.2-.06-2-.25-2.46-.42a3.9 3.9 0 0 1-1.52-.99 3.9 3.9 0 0 1-.99-1.52c-.17-.46-.36-1.26-.42-2.46C2.21 15.6 2.2 15.2 2.2 12s.01-3.6.07-4.9c.06-1.2.25-2 .42-2.46.24-.62.53-1.06.99-1.52.46-.46.9-.75 1.52-.99.46-.17 1.26-.36 2.46-.42C8.4 2.21 8.8 2.2 12 2.2Zm0 1.8c-3.15 0-3.52.01-4.76.07-.97.05-1.5.2-1.86.34-.47.18-.8.39-1.15.74-.35.35-.56.68-.74 1.15-.14.36-.29.89-.34 1.86-.06 1.24-.07 1.61-.07 4.76s.01 3.52.07 4.76c.05.97.2 1.5.34 1.86.18.47.39.8.74 1.15.35.35.68.56 1.15.74.36.14.89.29 1.86.34 1.24.06 1.61.07 4.76.07s3.52-.01 4.76-.07c.97-.05 1.5-.2 1.86-.34.47-.18.8-.39 1.15-.74.35-.35.56-.68.74-1.15.14-.36.29-.89.34-1.86.06-1.24.07-1.61.07-4.76s-.01-3.52-.07-4.76c-.05-.97-.2-1.5-.34-1.86a2.1 2.1 0 0 0-.74-1.15 2.1 2.1 0 0 0-1.15-.74c-.36-.14-.89-.29-1.86-.34-1.24-.06-1.61-.07-4.76-.07Zm0 2.75a5.25 5.25 0 1 1 0 10.5 5.25 5.25 0 0 1 0-10.5Zm0 1.8a3.45 3.45 0 1 0 0 6.9 3.45 3.45 0 0 0 0-6.9Zm5.5-.93a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/></svg>
+        </a>
+        <a href="#" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M16.7 2a6.1 6.1 0 0 0 .2 1.6c.5 1.8 2 3.1 3.8 3.5.4.1.8.1 1.3.1v3a7.66 7.66 0 0 1-5.1-1.9v6.8a6.2 6.2 0 1 1-6.2-6.2c.3 0 .7 0 1 .1v3a3.2 3.2 0 1 0 2.2 3V2h2.8Z"/></svg>
+        </a>
+      </nav>
+    </section>
+
+    <footer class="foot">
+      <p>© <span id="year"></span> Alibee.online — Catch the Buzz. Save Big.</p>
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById('waitlist').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const data = new FormData(form);
+      const btn = form.querySelector('.btn');
+      const note = form.querySelector('.waitlist__notice');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/join.php', { method:'POST', body:data, headers: {'Accept':'application/json'} });
+        const json = await res.json();
+        note.hidden = false;
+        note.textContent = json.ok ? 'Thanks! We’ll buzz you when we launch 🐝' : (json.error || 'Something went wrong.');
+        if (json.ok) form.reset();
+      } catch {
+        note.hidden = false;
+        note.textContent = 'Network error. Please try again.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
