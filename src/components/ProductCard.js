@@ -339,11 +339,11 @@ const ProductCard = ({ product, currency, language }) => {
         <ActionButtons>
           <ActionButton className="primary" onClick={handleViewProduct}>
             <FiExternalLink size={16} />
-            مشاهده محصول
+            View Product
           </ActionButton>
           <ActionButton className="secondary" onClick={handleShare}>
             <FiShare2 size={16} />
-            اشتراک
+            Share
           </ActionButton>
         </ActionButtons>
       </ContentContainer>

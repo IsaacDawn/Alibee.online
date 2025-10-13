@@ -138,7 +138,7 @@ function App() {
           </Select>
 
           <FilterButton onClick={() => console.log('Filter clicked')}>
-            🔍 فیلتر
+            🔍 Filter
           </FilterButton>
         </ControlsContainer>
       </Header>

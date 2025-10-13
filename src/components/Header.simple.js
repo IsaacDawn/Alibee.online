@@ -159,7 +159,7 @@ const Header = ({
 
         <FilterButton onClick={onFilterClick}>
           <span>🔍</span>
-          فیلتر
+          Filter
         </FilterButton>
       </ControlsContainer>
     </HeaderContainer>

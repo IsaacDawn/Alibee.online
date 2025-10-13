@@ -267,7 +267,7 @@ const FilterModal = ({ filters, categories, onClose, onApply }) => {
     <ModalOverlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <ModalTitle>فیلتر محصولات</ModalTitle>
+          <ModalTitle>Filter Products</ModalTitle>
           <CloseButton onClick={onClose}>
             <FiX />
           </CloseButton>
@@ -275,12 +275,12 @@ const FilterModal = ({ filters, categories, onClose, onApply }) => {
 
         <FormContainer onSubmit={handleSubmit}>
           <FormGroup>
-            <Label>دسته‌بندی</Label>
+            <Label>Category</Label>
             <Select
               value={localFilters.category}
               onChange={(e) => handleInputChange('category', e.target.value)}
             >
-              <option value="">همه دسته‌ها</option>
+              <option value="">All Categories</option>
               {categories.map(category => (
                 <option key={category.id} value={category.name}>
                   {category.name}
@@ -290,30 +290,30 @@ const FilterModal = ({ filters, categories, onClose, onApply }) => {
           </FormGroup>
 
           <FormGroup>
-            <Label>مرتب‌سازی</Label>
+            <Label>Sort By</Label>
             <Select
               value={localFilters.sort_order}
               onChange={(e) => handleInputChange('sort_order', e.target.value)}
             >
-              <option value="asc">قیمت: کم به زیاد</option>
-              <option value="desc">قیمت: زیاد به کم</option>
+              <option value="asc">Price: Low to High</option>
+              <option value="desc">Price: High to Low</option>
             </Select>
           </FormGroup>
 
           <FormGroup>
-            <Label>محدوده قیمت</Label>
+            <Label>Price Range</Label>
             <InputGroup>
               <Input
                 type="number"
-                placeholder="حداقل قیمت"
+                placeholder="Minimum Price"
                 value={localFilters.min_price}
                 onChange={(e) => handleInputChange('min_price', parseInt(e.target.value) || 0)}
                 min="0"
               />
-              <span style={{ color: '#666' }}>تا</span>
+              <span style={{ color: '#666' }}>to</span>
               <Input
                 type="number"
-                placeholder="حداکثر قیمت"
+                placeholder="Maximum Price"
                 value={localFilters.max_price}
                 onChange={(e) => handleInputChange('max_price', parseInt(e.target.value) || 1000000)}
                 min="0"
@@ -322,22 +322,22 @@ const FilterModal = ({ filters, categories, onClose, onApply }) => {
           </FormGroup>
 
           <FormGroup>
-            <Label>تعداد محصولات</Label>
+            <Label>Number of Products</Label>
             <Select
               value={localFilters.limit}
               onChange={(e) => handleInputChange('limit', parseInt(e.target.value))}
             >
-              <option value={50}>50 محصول</option>
-              <option value={100}>100 محصول</option>
-              <option value={200}>200 محصول</option>
-              <option value={500}>500 محصول</option>
+              <option value={50}>50 products</option>
+              <option value={100}>100 products</option>
+              <option value={200}>200 products</option>
+              <option value={500}>500 products</option>
             </Select>
           </FormGroup>
 
           <ToggleContainer>
             <ToggleLabel>
               {localFilters.JustVideo ? <FiVideo size={20} /> : <FiVideoOff size={20} />}
-              فقط محصولات دارای ویدیو
+              Only products with video
             </ToggleLabel>
             <Toggle
               active={localFilters.JustVideo === 1}
@@ -347,11 +347,11 @@ const FilterModal = ({ filters, categories, onClose, onApply }) => {
 
           <ButtonContainer>
             <Button type="button" className="secondary" onClick={handleReset}>
-              بازنشانی
+              Reset
             </Button>
             <Button type="submit" className="primary">
               <FiCheck size={16} />
-              اعمال فیلتر
+              Apply Filter
             </Button>
           </ButtonContainer>
         </FormContainer>

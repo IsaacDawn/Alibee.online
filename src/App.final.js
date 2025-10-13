@@ -322,7 +322,7 @@ function App() {
           </Select>
 
           <FilterButton onClick={() => setShowFilterModal(true)}>
-            🔍 فیلتر
+            🔍 Filter
           </FilterButton>
         </ControlsContainer>
       </Header>
@@ -331,7 +331,7 @@ function App() {
         <ProductContainer>
           {loading ? (
             <LoadingContainer>
-              <div>⏳ در حال بارگذاری...</div>
+              <div>⏳ Loading...</div>
             </LoadingContainer>
           ) : (
             products.map((product) => (
@@ -375,10 +375,10 @@ function App() {
 
                   <ActionButtons>
                     <ActionButton className="primary">
-                      🔗 مشاهده محصول
+                      🔗 View Product
                     </ActionButton>
                     <ActionButton className="secondary">
-                      📤 اشتراک
+                      📤 Share
                     </ActionButton>
                   </ActionButtons>
                 </ContentContainer>
@@ -410,8 +410,8 @@ function App() {
             maxWidth: '500px',
             color: '#fff'
           }}>
-            <h2 style={{ marginBottom: '20px' }}>فیلتر محصولات</h2>
-            <p>فیلترها در نسخه کامل پیاده‌سازی خواهند شد</p>
+            <h2 style={{ marginBottom: '20px' }}>Filter Products</h2>
+            <p>Filters will be implemented in the full version</p>
             <button 
               onClick={() => setShowFilterModal(false)}
               style={{
@@ -424,7 +424,7 @@ function App() {
                 cursor: 'pointer'
               }}
             >
-              بستن
+              Close
             </button>
           </div>
         </div>

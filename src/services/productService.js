@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://alibeeonline-backend.onrender.com';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -34,16 +34,16 @@ api.interceptors.response.use(
     
     // Handle specific error cases
     if (error.response?.status === 404) {
-      throw new Error('منبع مورد نظر یافت نشد');
+      throw new Error('Resource not found');
     } else if (error.response?.status === 500) {
-      throw new Error('خطای سرور. لطفاً بعداً تلاش کنید');
+      throw new Error('Server error. Please try again later');
     } else if (error.code === 'ECONNABORTED') {
-      throw new Error('زمان اتصال به سرور تمام شد');
+      throw new Error('Connection timeout');
     } else if (!navigator.onLine) {
-      throw new Error('اتصال اینترنت برقرار نیست');
+      throw new Error('No internet connection');
     }
     
-    throw new Error(error.response?.data?.message || 'خطای نامشخص رخ داده است');
+    throw new Error(error.response?.data?.message || 'An unknown error occurred');
   }
 );
 
