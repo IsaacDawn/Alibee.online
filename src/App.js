@@ -182,7 +182,7 @@ function App() {
         />
         <ErrorContainer>
           <div>
-            <h3>خطا در بارگذاری محصولات</h3>
+            <h3>Error loading products</h3>
             <p>{error}</p>
             <button 
               onClick={() => loadProducts(true)}
@@ -196,7 +196,7 @@ function App() {
                 cursor: 'pointer'
               }}
             >
-              تلاش مجدد
+              Retry
             </button>
           </div>
         </ErrorContainer>
@@ -217,9 +217,9 @@ function App() {
       <MainContent>
         {products.length === 0 && !loading ? (
           <EmptyState>
-            <EmptyStateTitle>محصولی یافت نشد</EmptyStateTitle>
+            <EmptyStateTitle>No products found</EmptyStateTitle>
             <EmptyStateText>
-              با تغییر فیلترها یا جستجوی جدید، محصولات بیشتری را کشف کنید
+              Try changing filters or searching for new products to discover more
             </EmptyStateText>
           </EmptyState>
         ) : (
@@ -236,7 +236,7 @@ function App() {
             {loading && (
               <LoadingContainer>
                 <div className="loading">⏳</div>
-                <span style={{ marginLeft: '10px' }}>در حال بارگذاری...</span>
+                <span style={{ marginLeft: '10px' }}>Loading...</span>
               </LoadingContainer>
             )}
             

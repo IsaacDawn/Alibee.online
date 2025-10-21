@@ -17,6 +17,6 @@
     }
   ],
   "env": {
-    "REACT_APP_API_URL": "https://alibeeonline-backend.onrender.com"
+    "REACT_APP_API_URL": "https://alibeeonline-backend-9cl5.onrender.com"
   }
 }
