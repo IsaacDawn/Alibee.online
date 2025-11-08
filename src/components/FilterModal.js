@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FiX, FiCheck, FiVideo, FiVideoOff } from 'react-icons/fi';
+import { FiX, FiCheck, FiVideo, FiVideoOff, FiList } from 'react-icons/fi';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -189,8 +189,9 @@ const Toggle = styled.div`
 
 const ButtonContainer = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 12px;
   margin-top: 20px;
+  flex-wrap: wrap;
 `;
 
 const Button = styled.button`
@@ -229,7 +230,7 @@ const Button = styled.button`
   }
 `;
 
-const FilterModal = ({ filters, categories, onClose, onApply }) => {
+const FilterModal = ({ filters, categories, onClose, onApply, onShowAll }) => {
   const [localFilters, setLocalFilters] = useState(filters);
 
   const handleInputChange = (field, value) => {
@@ -349,6 +350,20 @@ const FilterModal = ({ filters, categories, onClose, onApply }) => {
             <Button type="button" className="secondary" onClick={handleReset}>
               Reset
             </Button>
+            {onShowAll && (
+              <Button 
+                type="button" 
+                className="secondary" 
+                onClick={() => {
+                  onShowAll();
+                  onClose();
+                }}
+                style={{ background: 'linear-gradient(45deg, #8b5cf6, #6366f1)' }}
+              >
+                <FiList size={16} />
+                Show All
+              </Button>
+            )}
             <Button type="submit" className="primary">
               <FiCheck size={16} />
               Apply Filter

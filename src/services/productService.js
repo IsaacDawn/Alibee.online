@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://alibeeonline-backend-9cl5.onrender.com';
+// Use localhost for development, production URL for production
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://alibeeonline-backend-9cl5.onrender.com');
 
 // Create axios instance with default config
 const api = axios.create({
@@ -31,19 +33,17 @@ api.interceptors.response.use(
   },
   (error) => {
     console.error('API Response Error:', error.response?.data || error.message);
+    console.error('API Response Error Details:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+      method: error.config?.method,
+      data: error.response?.data
+    });
     
-    // Handle specific error cases
-    if (error.response?.status === 404) {
-      throw new Error('Resource not found');
-    } else if (error.response?.status === 500) {
-      throw new Error('Server error. Please try again later');
-    } else if (error.code === 'ECONNABORTED') {
-      throw new Error('Connection timeout');
-    } else if (!navigator.onLine) {
-      throw new Error('No internet connection');
-    }
-    
-    throw new Error(error.response?.data?.message || 'An unknown error occurred');
+    // Don't transform the error - let the calling code handle it
+    // This allows more detailed error information to be passed through
+    return Promise.reject(error);
   }
 );
 
@@ -171,27 +171,101 @@ export const productService = {
   },
 
   /**
-   * Search products by query
-   * @param {string} query - Search query
-   * @param {Object} filters - Additional filters
+   * Search products by keyword
+   * @param {string} keyword - Search keyword
+   * @param {Object} filters - Additional filters (sort_order, currency, limit, min_price, max_price)
    * @returns {Promise<Object>} Search results
    */
-  async searchProducts(query, filters = {}) {
+  async searchProducts(keyword, filters = {}) {
     try {
       const params = {
-        q: query,
-        ...filters
+        keyword: keyword,
+        sort_order: filters.sort_order || 'asc',
+        currency: filters.currency || 'USD',
+        limit: filters.limit,
+        min_price: filters.min_price,
+        max_price: filters.max_price
       };
 
+      // Remove empty parameters
+      Object.keys(params).forEach(key => {
+        if (params[key] === '' || params[key] === null || params[key] === undefined) {
+          delete params[key];
+        }
+      });
+
+      console.log('Searching products with params:', params);
+      console.log('API Base URL:', API_BASE_URL);
+      console.log('Full URL will be:', `${API_BASE_URL}/api/products/search?${new URLSearchParams(params).toString()}`);
+      
       const response = await api.get('/api/products/search', { params });
+      console.log('Search response status:', response.status);
+      console.log('Search response data:', response.data);
+      
+      // Handle the API response structure: {status: "success", data: {products: [...], total: 5, ...}}
+      let products = [];
+      let total = 0;
+
+      if (response.data && response.data.status === 'error') {
+        throw new Error(response.data.message || 'Search failed');
+      }
+
+      if (response.data && response.data.data && Array.isArray(response.data.data.products)) {
+        products = response.data.data.products;
+        total = response.data.data.total || 0;
+      } else if (Array.isArray(response.data.products)) {
+        products = response.data.products;
+        total = response.data.total || 0;
+      } else if (Array.isArray(response.data)) {
+        products = response.data;
+      }
+
+      console.log('Parsed search products:', products.length, 'Total:', total);
+
       return {
-        products: response.data.products || response.data || [],
-        hasMore: response.data.hasMore || false,
-        total: response.data.total || 0
+        products,
+        hasMore: false,
+        total,
+        page: 1
       };
     } catch (error) {
       console.error('Error searching products:', error);
-      throw error;
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: error.config?.baseURL ? `${error.config.baseURL}${error.config.url}` : error.config?.url
+      });
+      
+      // Create a more informative error message
+      let errorMessage = 'Failed to search products';
+      
+      if (error.response) {
+        // Server responded with error status
+        if (error.response.status === 404) {
+          errorMessage = error.response.data?.message || `Endpoint not found: ${error.config?.url || '/api/products/search'}`;
+        } else if (error.response.status === 400) {
+          errorMessage = error.response.data?.message || 'Invalid search request';
+        } else if (error.response.status === 500) {
+          errorMessage = error.response.data?.message || 'Server error occurred';
+        } else {
+          errorMessage = error.response.data?.message || `Request failed with status ${error.response.status}`;
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = 'No response from server. Please check your connection.';
+      } else {
+        // Error in setting up the request
+        errorMessage = error.message || 'Failed to setup search request';
+      }
+      
+      const searchError = new Error(errorMessage);
+      searchError.originalError = error;
+      searchError.status = error.response?.status;
+      searchError.response = error.response;
+      throw searchError;
     }
   },
 
@@ -314,6 +388,47 @@ export const productService = {
       return response.data;
     } catch (error) {
       console.error('Error checking health:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get all products from database without any filters
+   * @param {string} currency - Currency code (USD, EUR, ILS, etc.)
+   * @returns {Promise<Object>} All products response
+   */
+  async getAllProducts(currency = 'USD') {
+    try {
+      const response = await api.get('/api/products/all-batch', {
+        params: {
+          currency: currency
+        }
+      });
+      
+      // Handle the API response structure
+      let products = [];
+      let total = 0;
+
+      if (response.data && response.data.data && Array.isArray(response.data.data.products)) {
+        products = response.data.data.products;
+        total = response.data.data.total || 0;
+      } else if (Array.isArray(response.data.products)) {
+        products = response.data.products;
+        total = response.data.total || 0;
+      } else if (Array.isArray(response.data)) {
+        products = response.data;
+      }
+
+      console.log('All products loaded:', products.length, 'Total:', total);
+
+      return {
+        products,
+        hasMore: false,
+        total,
+        page: 1
+      };
+    } catch (error) {
+      console.error('Error fetching all products:', error);
       throw error;
     }
   }

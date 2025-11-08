@@ -314,7 +314,7 @@ const ProductCard = ({ product, currency, language }) => {
         {product.store_name && (
           <StoreName>{product.store_name}</StoreName>
         )}
-
+        
         {product.rating && (
           <RatingContainer>
             <Stars>
@@ -323,7 +323,7 @@ const ProductCard = ({ product, currency, language }) => {
             <RatingText>({product.rating.toFixed(1)})</RatingText>
           </RatingContainer>
         )}
-
+        
         <PriceContainer>
           <CurrentPrice>
             {formatPrice(product.current_price, currency)}
@@ -335,7 +335,7 @@ const ProductCard = ({ product, currency, language }) => {
             </OriginalPrice>
           )}
         </PriceContainer>
-
+        
         <ActionButtons>
           <ActionButton className="primary" onClick={handleViewProduct}>
             <FiExternalLink size={16} />

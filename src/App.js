@@ -170,6 +170,63 @@ function App() {
     setFilters(prev => ({ ...prev, currency: newCurrency }));
   };
 
+  const handleShowAllProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setPage(1);
+    setHasMore(false);
+
+    try {
+      const response = await productService.getAllProducts(filters.currency);
+      
+      // Transform products to match ProductCard format
+      const transformedProducts = (response.products || []).map(product => {
+        // Parse discount percentage
+        let discountPercentage = 0;
+        if (product.discount) {
+          const discountStr = String(product.discount).replace('%', '').trim();
+          discountPercentage = parseFloat(discountStr) || 0;
+        }
+        
+        // Parse rating
+        let rating = 0;
+        if (product.evaluate_rate) {
+          rating = parseFloat(product.evaluate_rate) || 0;
+        } else if (product.rating_weighted) {
+          rating = parseFloat(product.rating_weighted) || 0;
+        } else if (product.rating) {
+          rating = parseFloat(product.rating) || 0;
+        }
+        
+        return {
+          id: product.product_id,
+          title: product.custom_title || product.product_title || '',
+          image_url: product.product_main_image_url || '',
+          current_price: parseFloat(product.target_sale_price || product.sale_price || 0),
+          original_price: parseFloat(product.target_original_price || product.original_price || 0),
+          discount_percentage: discountPercentage,
+          rating: rating,
+          store_name: product.shop_name || '',
+          product_url: product.promotion_link || product.product_detail_url || '',
+          has_video: !!(product.product_video_url && product.product_video_url.trim()),
+          product_video_url: product.product_video_url || '',
+          product_small_image_urls: product.product_small_image_urls || {}
+        };
+      });
+
+      setProducts(transformedProducts);
+      setPage(1);
+      setHasMore(false);
+    } catch (err) {
+      setError(err.message || 'Failed to load all products');
+      console.error('Error loading all products:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters.currency]);
+
+  
+
   if (error && products.length === 0) {
     return (
       <AppContainer>
@@ -247,12 +304,15 @@ function App() {
         )}
       </MainContent>
 
+      
+
       {showFilterModal && (
         <FilterModal
           filters={filters}
           categories={categories}
           onClose={() => setShowFilterModal(false)}
           onApply={handleFilterChange}
+          onShowAll={handleShowAllProducts}
         />
       )}
     </AppContainer>

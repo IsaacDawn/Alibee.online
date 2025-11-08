@@ -186,7 +186,8 @@ const Header = ({
   selectedLanguage, 
   onLanguageChange, 
   selectedCurrency, 
-  onCurrencyChange 
+  onCurrencyChange,
+  showSearch = true
 }) => {
   const languages = [
     { code: 'en', display: 'EN' },
@@ -211,11 +212,6 @@ const Header = ({
       </LogoSection>
 
       <ControlsSection>
-        <SearchButton onClick={onSearchClick} title="Search Products">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </SearchButton>
 
         <SelectContainer>
           <LanguageSelect value={selectedLanguage} onChange={(e) => onLanguageChange(e.target.value)}>

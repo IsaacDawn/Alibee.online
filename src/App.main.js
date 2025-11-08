@@ -2,7 +2,18 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { productService } from './services/productService';
 import ProductImageCarouselTikTok from './components/ProductImageCarouselTikTok';
-import Header from './components/Header';
+import { imageCache } from './utils/imageCache';
+import heartIcon from './icons/heart.svg';
+import heartOnIcon from './icons/heart-on.svg';
+import starIcon from './icons/star.svg';
+import soldIcon from './icons/sold.svg';
+import fashionIcon from './icons/fashion.svg';
+import shoeIcon from './icons/shoe.svg';
+import jewelryIcon from './icons/jewelry.svg';
+import carIcon from './icons/car.svg';
+import mobileIcon from './icons/mobile.svg';
+import cartIcon from './icons/cart.svg';
+import miniLogoIcon from './icons/Mini_Logo.svg';
 
 const AppContainer = styled.div`
   height: 100vh;
@@ -10,7 +21,7 @@ const AppContainer = styled.div`
   background: #000;
   overflow: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  padding-top: 60px; /* Space for fixed header */
+  padding-top: 0;
 `;
 
 const VideoContainer = styled.div`
@@ -41,27 +52,17 @@ const VideoItem = styled.div`
 `;
 
 const ProductImageContainer = styled.div`
-  width: 90vw;
-  height: 50vh;
+  width: 100vw;
+  height: 100vh;
   background: transparent;
-  border-radius: 1rem;
+  border-radius: 0;
   box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: none;
   overflow: hidden;
-  margin-top: 1vh;
-  
-  @media (min-aspect-ratio: 1/1) {
-    width: 50vw;
-    height: 80vh;
-    margin-top: 0;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  margin: 0;
 `;
 
 const ProductImage = styled.img`
@@ -72,16 +73,345 @@ const ProductImage = styled.img`
 `;
 
 const ImageFrame = styled.div`
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+// Scene UI overlays (to match reference image)
+const SideActions = styled.div`
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  z-index: 20;
+`;
+
+const ActionCircle = styled.button`
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => (props.$active ? '#ff6b6b' : '#111')};
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease, background 0.2s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover { transform: translateY(-2px) scale(1.05); background: #fff; }
+  &:focus { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+  &:active { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+`;
+
+const ActionCount = styled.div`
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+`;
+
+const NonInteractiveCircle = styled.div`
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  color: #111;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  pointer-events: none; /* not touchable */
+`;
+
+const ProductInfoCard = styled.div`
+  position: absolute;
+  left: 16px;
+  right: 96px;
+  bottom: 112px;
+  background: rgba(7, 33, 33, 0.2);
+  color: #fff;
+  border-radius: 5px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+  backdrop-filter: blur(3px);
+  display: flex;
+  flex-direction: column;
+`;
+
+const ProductTitleText = styled.h3`
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 700;
+`;
+
+const PriceRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+`;
+
+const PriceNew = styled.span`
+  color: #4ecdc4;
+  font-size: 18px;
+  font-weight: 800;
+`;
+
+const PriceOld = styled.span`
+  color: #f59e9e;
+  text-decoration: line-through;
+  font-size: 14px;
+`;
+
+const BuyBtn = styled.button`
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 24px rgba(78,205,196,0.35);
+  align-self: flex-start;
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(78,205,196,0.5); }
+`;
+
+const QuickReturn = styled.button`
+  position: absolute;
+  right: 16px;
+  bottom: 120px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+  &:active { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+`;
+
+const BottomBar = styled.div`
+  position: fixed;
+  left: 0; 
+  right: 0; 
+  bottom: 0;
+  height: 80px;
+  min-height: 80px;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  z-index: 25;
+  width: 100%;
+  max-width: 100vw;
+  overflow: visible;
+  box-sizing: border-box;
+`;
+
+const BottomCats = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-height: 64px;
+  padding: 8px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
   
-  @media (min-aspect-ratio: 1/1) {
-    width: 90%;
-    height: 90%;
-    aspect-ratio: 1 / 1;
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  /* Enable horizontal scroll on mobile if needed */
+  @media (max-width: 480px) {
+    gap: 6px;
+    padding: 8px 4px;
+    min-height: 56px;
+  }
+`;
+
+const CatBtn = styled.button`
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  border: 1px solid rgb(255, 255, 255);
+  background: rgba(255, 255, 255, 0.87);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 30;
+
+  &:hover { transform: translateY(-2px) scale(1.05); background: rgba(78,205,196,0.9); }
+  &:focus { outline: none; box-shadow: none; }
+  &:active { outline: none; box-shadow: none; }
+  
+  &.active {
+    border: 2px solid rgba(78, 205, 196, 1);
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3), 0 0 0 5px rgba(78, 205, 196, 0.15);
+    background: rgba(78, 205, 196, 0.95);
+  }
+  
+  @media (max-width: 480px) {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    
+    &.active {
+      box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.3), 0 0 0 4px rgba(78, 205, 196, 0.15);
+    }
+  }
+`;
+
+const BottomSearch = styled.button`
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(78,205,196,0.95);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 30px rgba(78,205,196,0.4);
+  flex-shrink: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 30;
+
+  &:focus { outline: none; box-shadow: 0 10px 30px rgba(78,205,196,0.4); }
+  &:active { outline: none; box-shadow: 0 10px 30px rgba(78,205,196,0.4); }
+
+  &:hover { transform: translateY(-2px) scale(1.05); }
+  
+  &.active {
+    border: 2px solid rgba(78, 205, 196, 1);
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3), 0 0 0 5px rgba(78, 205, 196, 0.15), 0 10px 30px rgba(78,205,196,0.4);
+    background: rgba(78, 205, 196, 1);
+  }
+  
+  @media (max-width: 480px) {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    
+    &.active {
+      box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.3), 0 0 0 4px rgba(78, 205, 196, 0.15), 0 10px 30px rgba(78,205,196,0.4);
+    }
+  }
+`;
+
+const BottomShowAll = styled.button`
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: linear-gradient(135deg, #ff8c42,rgb(218, 255, 53));
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 30px rgba(255, 140, 66, 0.4);
+  flex-shrink: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 4px;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 30;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0);
+  }
+
+  &:focus { outline: none; box-shadow: 0 10px 30px rgba(255, 140, 66, 0.4); }
+  &:active { 
+    outline: none; 
+    box-shadow: 0 10px 30px rgba(255, 140, 66, 0.4);
+    transform: none;
+  }
+
+  &:hover:not(.active) { 
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 12px 35px rgba(255, 140, 66, 0.5);
+    img {
+      filter: brightness(0) drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+    }
+  }
+  
+  &.active {
+    border: 2px solid rgba(255, 140, 66, 1);
+    box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.3), 0 0 0 5px rgba(255, 140, 66, 0.15), 0 10px 30px rgba(255, 140, 66, 0.4);
+    transform: none;
+  }
+  
+  @media (max-width: 480px) {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    
+    &.active {
+      box-shadow: 0 0 0 2px rgba(255, 140, 66, 0.3), 0 0 0 4px rgba(255, 140, 66, 0.15), 0 10px 30px rgba(255, 140, 66, 0.4);
+    }
   }
 `;
 
@@ -738,16 +1068,46 @@ function App() {
   const [maxPrice, setMaxPrice] = useState(100000);
   const [justVideo, setJustVideo] = useState(false);
   const [sortOrder, setSortOrder] = useState('asc');
+  const [searchKeyword, setSearchKeyword] = useState(''); // New state for search keyword
   
   // Header states
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [likedProducts, setLikedProducts] = useState(new Set());
   const [toastMessage, setToastMessage] = useState('');
+  const [activeButton, setActiveButton] = useState(null); // 'category', 'showAll', 'search'
+  const [activeCategoryButton, setActiveCategoryButton] = useState(null); // Track which category button is active
   
   const videoContainerRef = useRef(null);
   const initialLoadCount = 5;
   const hasInitiallyLoaded = useRef(false);
+  const productRefs = useRef({}); // Refs for IntersectionObserver
+  const [productsInView, setProductsInView] = useState(new Set()); // Track which products are in view
+  
+  // Global loading counter for all products
+  useEffect(() => {
+    const logInterval = setInterval(() => {
+      // Count all img and video elements that are currently loading
+      const allImages = document.querySelectorAll('img[src]');
+      const allVideos = document.querySelectorAll('video[src]');
+      let loadingImages = 0;
+      let loadingVideos = 0;
+      
+      allImages.forEach(img => {
+        if (!img.complete) loadingImages++;
+      });
+      
+      allVideos.forEach(video => {
+        if (video.readyState < 3) loadingVideos++; // 3 = HAVE_FUTURE_DATA
+      });
+      
+      if (loadingImages > 0 || loadingVideos > 0) {
+        console.log(`[App] Global Status - Loading: ${loadingImages} images, ${loadingVideos} videos | Total products: ${displayedProducts.length}, In view: ${productsInView.size}`);
+      }
+    }, 3000); // Log every 3 seconds
+    
+    return () => clearInterval(logInterval);
+  }, [displayedProducts.length, productsInView.size]);
 
   // Load liked products from localStorage on mount
   useEffect(() => {
@@ -878,7 +1238,7 @@ function App() {
         category: 'all',
         sort_order: 'asc',
         currency: 'USD',
-        limit: 100,
+        limit: 150,
         min_price: 0,
         max_price: 100000,
         JustVideo: 0
@@ -976,6 +1336,7 @@ function App() {
         const newIndex = Math.round(scrollTop / itemHeight);
         if (newIndex !== currentProductIndex && newIndex < displayedProducts.length) {
           setCurrentProductIndex(newIndex);
+          // Next product preloading is handled by useEffect that watches currentProductIndex
         }
       }, 100);
     };
@@ -983,6 +1344,116 @@ function App() {
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
   }, [currentProductIndex, displayedProducts.length]);
+
+  // IntersectionObserver to detect products in viewport
+  useEffect(() => {
+    if (displayedProducts.length === 0) return;
+
+    const observerOptions = {
+      root: videoContainerRef.current,
+      rootMargin: '0px',
+      threshold: [0.5] // Product must be at least 50% visible
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const productIndex = parseInt(entry.target.dataset.productIndex);
+        if (isNaN(productIndex)) return;
+
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          // Only the product that is currently in view (IntersectionObserver) should load all images
+          setProductsInView(prev => {
+            const newSet = new Set();
+            newSet.add(productIndex); // Only add current product
+            return newSet;
+          });
+        } else {
+          // Remove product from in-view set when it goes out of view
+          setProductsInView(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(productIndex);
+            return newSet;
+          });
+        }
+      });
+    }, observerOptions);
+
+    // Observe all product containers
+    Object.values(productRefs.current).forEach(ref => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [displayedProducts.length]);
+
+  // Preload first media (video or image) of next product only
+  // Store in a ref to prevent re-creating on every render
+  const nextProductPreloadRef = useRef(new Map()); // Track which products have been preloaded (Map<index, imageUrl>)
+  
+  useEffect(() => {
+    // Always preload next product's first image immediately
+    const nextIndex = currentProductIndex + 1;
+    
+    if (nextIndex < displayedProducts.length) {
+      const nextProduct = displayedProducts[nextIndex];
+      const preloadKey = `${nextIndex}_${nextProduct?.product_id || nextIndex}`;
+      
+      // Skip if already preloaded
+      if (nextProductPreloadRef.current.has(preloadKey)) {
+        return;
+      }
+      
+      // If next product has video, preload video (video is the first media)
+      if (nextProduct && nextProduct.product_video_url) {
+        console.log(`[App] Preloading video for next product (index ${nextIndex}): ${nextProduct.product_video_url.substring(0, 50)}...`);
+        const video = document.createElement('video');
+        video.src = nextProduct.product_video_url;
+        video.preload = 'metadata'; // Only load metadata, not full video
+        video.load();
+        nextProductPreloadRef.current.set(preloadKey, nextProduct.product_video_url);
+        return; // Don't load first image if video exists
+      }
+      
+      // If no video, preload first image
+      if (nextProduct && nextProduct.product_small_image_urls) {
+        const images = Array.isArray(nextProduct.product_small_image_urls) 
+          ? nextProduct.product_small_image_urls 
+          : (nextProduct.product_small_image_urls?.string || []);
+        
+        // Preload only first image of next product (not all images)
+        if (images.length > 0 && images[0]) {
+          const firstImageUrl = images[0];
+          
+          // Check if already cached
+          if (imageCache.isCached(firstImageUrl)) {
+            console.log(`[App] ✓ Next product first image already cached (index ${nextIndex}): ${firstImageUrl.substring(0, 50)}...`);
+            nextProductPreloadRef.current.set(preloadKey, firstImageUrl);
+            return;
+          }
+          
+          console.log(`[App] Preloading first image for next product (index ${nextIndex}): ${firstImageUrl.substring(0, 50)}...`);
+          
+          // Use imageCache to preload and cache the image
+          imageCache.preloadImage(firstImageUrl).then((cachedImg) => {
+            if (cachedImg) {
+              console.log(`[App] ✓ Preloaded and cached first image for next product (index ${nextIndex}): ${firstImageUrl.substring(0, 50)}...`);
+            } else {
+              console.warn(`[App] ✗ Failed to preload first image for next product (index ${nextIndex}): ${firstImageUrl.substring(0, 50)}...`);
+            }
+            nextProductPreloadRef.current.set(preloadKey, firstImageUrl);
+          });
+        }
+      }
+    }
+  }, [currentProductIndex, displayedProducts]);
+  
+  // Clear preload tracking when products change significantly
+  useEffect(() => {
+    // Only clear if products array length changes significantly (new search, etc.)
+    nextProductPreloadRef.current.clear();
+  }, [displayedProducts.length]);
 
   const formatPrice = (price, currency = 'USD') => {
     const symbols = { 'USD': '$', 'EUR': '€', 'ILS': '₪' };
@@ -1087,7 +1558,14 @@ function App() {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    // Validate search keyword
+    if (!searchKeyword || !searchKeyword.trim()) {
+      setToastMessage(selectedLanguage === 'en' ? 'Please enter a search keyword' : selectedLanguage === 'ar' ? 'يرجى إدخال كلمة البحث' : 'אנא הזן מילת חיפוש');
+      setTimeout(() => setToastMessage(''), 3000);
+      return;
+    }
+    
     // Clear all products and reset scroll
     setProducts([]);
     setDisplayedProducts([]);
@@ -1100,10 +1578,220 @@ function App() {
       videoContainerRef.current.scrollTop = 0;
     }
     
-    // Reload products with new filter criteria
-    loadProducts(true);
-    setShowSearchModal(false);
+    // Search products using the new search endpoint
+    try {
+      const response = await productService.searchProducts(searchKeyword.trim(), {
+        sort_order: sortOrder,
+        currency: selectedCurrency,
+        limit: 100,
+        min_price: minPrice > 0 ? minPrice : undefined,
+        max_price: maxPrice < 100000 ? maxPrice : undefined
+      });
+      
+      // Transform products to match the expected format
+      const transformedProducts = (response.products || []).map(product => {
+        // Parse discount percentage
+        let discountPercentage = 0;
+        if (product.discount) {
+          const discountStr = String(product.discount).replace('%', '').trim();
+          discountPercentage = parseFloat(discountStr) || 0;
+        }
+        
+        // Parse rating
+        let rating = 0;
+        if (product.evaluate_rate) {
+          rating = parseFloat(product.evaluate_rate) || 0;
+        } else if (product.rating_weighted) {
+          rating = parseFloat(product.rating_weighted) || 0;
+        } else if (product.rating) {
+          rating = parseFloat(product.rating) || 0;
+        }
+        
+        return {
+          product_id: product.product_id,
+          product_title: product.custom_title || product.product_title || '',
+          product_main_image_url: product.product_main_image_url || '',
+          target_sale_price: product.target_sale_price || product.sale_price || '0',
+          target_original_price: product.target_original_price || product.original_price || '0',
+          discount: product.discount || '0%',
+          evaluate_rate: rating,
+          shop_name: product.shop_name || '',
+          promotion_link: product.promotion_link || product.product_detail_url || '',
+          product_video_url: product.product_video_url || '',
+          product_small_image_urls: product.product_small_image_urls || {},
+          first_level_category_name: product.first_level_category_name || '',
+          lastest_volume: product.lastest_volume || 0
+        };
+      });
+
+      setProducts(transformedProducts);
+      setDisplayedProducts(transformedProducts.slice(0, initialLoadCount));
+      setCurrentProductIndex(0);
+      setHasMore(transformedProducts.length > initialLoadCount);
+      setShowSearchModal(false);
+      setActiveButton('search');
+    } catch (err) {
+      console.error('Error searching products:', err);
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: err.config?.url,
+        baseURL: err.config?.baseURL
+      });
+      
+      // Only set error if we have no products to show
+      // If we have some products, just show toast
+      if (displayedProducts.length === 0) {
+        const errorMessage = err.response?.data?.message || err.message || 'Failed to search products';
+        setError(errorMessage);
+        setToastMessage(errorMessage);
+        setTimeout(() => setToastMessage(''), 5000);
+      } else {
+        // We have some products, just show toast
+        const errorMessage = err.response?.data?.message || err.message || 'Some products may not have loaded';
+        setToastMessage(errorMessage);
+        setTimeout(() => setToastMessage(''), 5000);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleShowAllProducts = useCallback(async () => {
+    console.log('Show all products clicked');
+    setActiveButton('showAll');
+    setActiveCategoryButton(null); // Clear category button selection
+    setLoading(true);
+    setError(null);
+    setSelectedCategory('');
+    setCurrentProductIndex(0);
+    setMinPrice(0);
+    setMaxPrice(100000);
+    setJustVideo(false);
+    setSortOrder('asc');
+
+    // Scroll to top
+    if (videoContainerRef.current) {
+      videoContainerRef.current.scrollTop = 0;
+    }
+
+    try {
+      const response = await productService.getAllProducts(selectedCurrency);
+      console.log('All products response:', response);
+
+      // Transform products to match the expected format
+      const transformedProducts = (response.products || []).map(product => {
+        // Parse discount percentage
+        let discountPercentage = 0;
+        if (product.discount) {
+          const discountStr = String(product.discount).replace('%', '').trim();
+          discountPercentage = parseFloat(discountStr) || 0;
+        }
+        
+        // Parse rating
+        let rating = 0;
+        if (product.evaluate_rate) {
+          rating = parseFloat(product.evaluate_rate) || 0;
+        } else if (product.rating_weighted) {
+          rating = parseFloat(product.rating_weighted) || 0;
+        } else if (product.rating) {
+          rating = parseFloat(product.rating) || 0;
+        }
+        
+        return {
+          product_id: product.product_id,
+          product_title: product.custom_title || product.product_title || '',
+          product_main_image_url: product.product_main_image_url || '',
+          target_sale_price: product.target_sale_price || product.sale_price || '0',
+          target_original_price: product.target_original_price || product.original_price || '0',
+          discount: product.discount || '0%',
+          evaluate_rate: rating,
+          shop_name: product.shop_name || '',
+          promotion_link: product.promotion_link || product.product_detail_url || '',
+          product_video_url: product.product_video_url || '',
+          product_small_image_urls: product.product_small_image_urls || {},
+          first_level_category_name: product.first_level_category_name || '',
+          lastest_volume: product.lastest_volume || 0
+        };
+      });
+
+      setProducts(transformedProducts);
+      setDisplayedProducts(transformedProducts.slice(0, initialLoadCount));
+      setCurrentProductIndex(0);
+      setHasMore(transformedProducts.length > initialLoadCount);
+    } catch (err) {
+      setError(err.message || 'Failed to load all products');
+      console.error('Error loading all products:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCurrency]);
+
+  const handleCategoryClick = useCallback(async (category) => {
+    console.log('Category clicked:', category);
+    setActiveButton('category');
+    setActiveCategoryButton(category); // Track which category button is clicked
+    // Map category labels to API category names
+    const categoryMap = {
+      'car': 'Automobiles, Parts & Accessories'
+    };
+    
+    // Use mapped category if available, otherwise use the label directly
+    const apiCategory = categoryMap[category] || category;
+    
+    // Set the selected category
+    setSelectedCategory(apiCategory);
+    
+    // Clear all products and reset scroll
+    setProducts([]);
+    setDisplayedProducts([]);
+    setCurrentProductIndex(0);
+    setLoading(true);
+    setError(null);
+    
+    // Scroll to top
+    if (videoContainerRef.current) {
+      videoContainerRef.current.scrollTop = 0;
+    }
+    
+    // Load products directly with the new category
+    try {
+      const apiParams = {
+        category: apiCategory,
+        sort_order: sortOrder,
+        currency: selectedCurrency,
+        limit: 100,
+        min_price: minPrice,
+        max_price: maxPrice,
+        JustVideo: justVideo ? 1 : 0
+      };
+      
+      console.log('Category click API Parameters:', JSON.stringify(apiParams, null, 2));
+      const response = await productService.getProducts(apiParams);
+      console.log('Category click API Response:', response);
+
+      // Handle the response from productService
+      let allProducts = [];
+      if (response && response.products && Array.isArray(response.products)) {
+        allProducts = response.products;
+        console.log('Category click found products:', allProducts.length);
+      } else {
+        console.log('Category click no products found in response:', response);
+        allProducts = [];
+      }
+
+      setProducts(allProducts);
+      setDisplayedProducts(allProducts.slice(0, initialLoadCount));
+      setCurrentProductIndex(0);
+      setHasMore(allProducts.length > initialLoadCount);
+    } catch (err) {
+      setError(err.message || 'Failed to load products');
+      console.error('Error in category click:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [sortOrder, minPrice, maxPrice, justVideo, selectedCurrency, initialLoadCount]);
 
   const handleCurrencyChange = (newCurrency) => {
     console.log('Currency changed from', selectedCurrency, 'to', newCurrency);
@@ -1199,13 +1887,16 @@ function App() {
     );
   }
 
-  if (error && displayedProducts.length === 0) {
+  if (error && displayedProducts.length === 0 && !loading) {
     return (
       <AppContainer>
         <ErrorContainer>
           <h2>Error Loading Products</h2>
           <p>{error}</p>
-          <RetryButton onClick={() => loadProducts(true)}>
+          <RetryButton onClick={() => {
+            setError(null);
+            loadProducts(true);
+          }}>
             Retry
           </RetryButton>
         </ErrorContainer>
@@ -1215,15 +1906,6 @@ function App() {
 
   return (
     <AppContainer>
-      {/* Header */}
-      <Header 
-        onSearchClick={() => setShowSearchModal(true)}
-        selectedLanguage={selectedLanguage}
-        onLanguageChange={setSelectedLanguage}
-        selectedCurrency={selectedCurrency}
-        onCurrencyChange={handleCurrencyChange}
-      />
-
       {/* Video Container */}
       <VideoContainer ref={videoContainerRef}>
         {displayedProducts.length === 0 ? (
@@ -1258,8 +1940,56 @@ function App() {
             )}
           </div>
         ) : (
-          displayedProducts.map((product, index) => (
-          <VideoItem key={product.product_id || index} $bgGradient={getGradientBackground(index)}>
+          displayedProducts.map((product, index) => {
+            // Create ref for IntersectionObserver
+            const productRef = (el) => {
+              if (el) {
+                el.dataset.productIndex = index;
+                productRefs.current[index] = el;
+              } else {
+                delete productRefs.current[index];
+              }
+            };
+
+            // اولویت‌بندی لود تصاویر:
+            // 1. اولویت اول: تصویر اصلی یا ویدیو کارت فعلی
+            // 2. اولویت دوم: تصویر اصلی یا ویدیو کارت بعدی
+            // 3. اولویت سوم: سایر تصاویر کارت فعلی
+            // 4. اولویت چهارم: سایر تصاویر کارت بعدی
+            
+            const isCurrentlyInView = productsInView.has(index);
+            const nextIndex = currentProductIndex + 1;
+            
+            // تعیین اولویت برای هر کارت
+            let loadPriority = 0; // 0 = no priority, 1 = highest, 4 = lowest
+            let shouldLoadFirstImage = false;
+            let shouldLoadAllImages = false;
+            
+            if (index === currentProductIndex) {
+              // کارت فعلی: اولویت 1 برای تصویر اصلی، اولویت 3 برای سایر تصاویر
+              shouldLoadFirstImage = true; // Priority 1
+              shouldLoadAllImages = isCurrentlyInView; // Priority 3 - سایر تصاویر کارت فعلی
+              loadPriority = 1;
+            } else if (index === nextIndex) {
+              // کارت بعدی: اولویت 2 برای تصویر اصلی، اولویت 4 برای سایر تصاویر
+              shouldLoadFirstImage = true; // Priority 2
+              shouldLoadAllImages = true; // Priority 4 - سایر تصاویر کارت بعدی
+              loadPriority = 2;
+            }
+            
+            // Debug logging
+            if (index === currentProductIndex) {
+              console.log(`[App] Product ${index} is CURRENT - Priority 1: Main image/video, Priority 3: Other images (${shouldLoadAllImages ? 'YES' : 'NO'})`);
+            } else if (index === nextIndex) {
+              console.log(`[App] Product ${index} is NEXT - Priority 2: Main image/video, Priority 4: Other images (YES)`);
+            }
+            
+            return (
+            <VideoItem 
+              key={product.product_id || index} 
+              $bgGradient={getGradientBackground(index)}
+              ref={productRef}
+            >
                     <ProductImageContainer>
                       <ImageFrame>
                         <ProductImageCarouselTikTok
@@ -1268,106 +1998,103 @@ function App() {
                           autoPlay={true}
                           autoPlayInterval={3000}
                           isInView={index === currentProductIndex}
-                          onLike={() => handleLike(index)}
-                          onShare={() => handleShare(product)}
-                          isLiked={likedProducts.has(product.product_id)}
+                          showActions={false}
+                          shouldLoadAllImages={shouldLoadAllImages}
+                          shouldLoadFirstImage={shouldLoadFirstImage}
+                          loadPriority={loadPriority}
                         />
                       </ImageFrame>
                     </ProductImageContainer>
-            
-            <GradientOverlay />
-            
-            {/* Product Info Overlay */}
-            <ProductInfoOverlay>
-              <InfoFrame>
-                <LandscapeContentWrapper>
-                  <ProductTitle 
-                    $textColor={getHighContrastTextColor(getGradientBackground(index))}
-                  >
-                    {product.product_title}
-                  </ProductTitle>
-                  
-                  {/* Price Information */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                    <ProductPrice $textColor={getAccentColor(getGradientBackground(index), '#4ade80')}>
-                      {formatPrice(product.target_sale_price, product.target_original_price_currency)}
-                    </ProductPrice>
-                    {product.target_original_price && Number(product.target_original_price) > Number(product.target_sale_price) && (
-                      <span style={{ 
-                        color: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? '#666666' : '#cccccc', 
-                        textDecoration: 'line-through', 
-                        fontSize: '0.875rem'
-                      }}>
-                        {formatPrice(product.target_original_price, product.target_original_price_currency)}
-                      </span>
+            {/* Side actions */}
+            {(() => { const liked = likedProducts.has(product.product_id); return (
+            <SideActions>
+              <button 
+                onClick={() => handleLike(index)} 
+                aria-label="like" 
+                aria-pressed={liked}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  padding: 0, 
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  outline: 'none',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+                onFocus={(e) => e.target.style.outline = 'none'}
+                onMouseDown={(e) => e.target.style.outline = 'none'}
+              >
+                <img src={liked ? heartOnIcon : heartIcon} alt="like" width="28" height="28" style={{ display: 'block' }} />
+              </button>
+              {(() => { 
+                let r;
+                // Handle evaluate_rate which might be a string with % sign (e.g., "100.0%")
+                if (product.evaluate_rate !== undefined) {
+                  const rateStr = String(product.evaluate_rate).replace('%', '').trim();
+                  r = Number(rateStr);
+                  // Convert from percentage (0-100) to 0-5 scale
+                  if (Number.isFinite(r) && r > 5) {
+                    r = r / 20; // 100% = 5 stars, so divide by 20
+                  }
+                } else if (product.rating !== undefined) {
+                  r = Number(product.rating);
+                } else {
+                  r = NaN;
+                }
+                const hasR = Number.isFinite(r) && r >= 0;
+                return (
+                <div aria-label="rating" role="img" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <img src={starIcon} alt="star" width="24" height="24" style={{ display: 'block' }} />
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', textShadow: '0 2px 8px rgba(0, 0, 0, 0.6)' }}>{hasR ? r.toFixed(1) : 'no rate'}</span>
+                </div>
+              ); 
+              })()}
+              {(() => {
+                const salesCount = Number(product.lastest_volume) || 0;
+                const hasSales = salesCount > 0;
+                return (
+                  <div aria-label="bag" role="img" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    {hasSales ? (
+                      <>
+                        <img src={soldIcon} alt="sold" width="28" height="28" style={{ display: 'block' }} />
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff', textShadow: '0 2px 10px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.6)' }}>{salesCount.toLocaleString('en-US')}</span>
+                      </>
+                    ) : (
+                      <img src={soldIcon} alt="sold" width="28" height="28" style={{ display: 'block' }} />
                     )}
-                    {product.discount && Number(product.discount) > 0 && (
-                      <span style={{ 
-                        color: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? '#dc2626' : '#fca5a5', 
-                        fontSize: '0.75rem', 
-                        fontWeight: 'bold',
-                        background: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(252, 165, 165, 0.2)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        boxShadow: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? '0 2px 8px rgba(220, 38, 38, 0.3)' : '0 2px 8px rgba(252, 165, 165, 0.3)'
-                      }}>
-                        -{product.discount}%
-                      </span>
-                    )}
                   </div>
+                );
+              })()}
+            </SideActions>
+            ); })()}
 
-                  {/* Rating and Sales Volume */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                    <ProductRating $textColor={getAccentColor(getGradientBackground(index), '#fbbf24')}>
-                      {renderStars(product.evaluate_rate, getStarBackgroundColor(getGradientBackground(index)))}
-                    </ProductRating>
-                    <span style={{ 
-                      color: getAccentColor(getGradientBackground(index), '#a3e4d7'), 
-                      fontSize: 'clamp(0.6rem, 1.6vw, 0.7rem)'
-                    }}>
-                      ({(Number(product.evaluate_rate) || 0).toFixed(1)})
-                    </span>
-                    <OrderVolume $textColor={getAccentColor(getGradientBackground(index), '#a3e4d7')}>
-                      {Number(product.lastest_volume) || 0} bought
-                    </OrderVolume>
-                  </div>
+            {/* Quick return */}
+            <QuickReturn onClick={() => videoContainerRef.current && (videoContainerRef.current.scrollTop = 0)} aria-label="back-to-top">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </QuickReturn>
 
-                  {/* Category */}
-                  <div style={{ marginBottom: '0.25rem' }}>
-                    <span style={{ 
-                      background: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? 'rgba(37, 99, 235, 0.2)' : 'rgba(147, 197, 253, 0.2)', 
-                      color: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? '#2563eb' : '#93c5fd', 
-                      padding: '2px 8px', 
-                      borderRadius: '12px', 
-                      fontSize: 'clamp(0.65rem, 1.8vw, 0.75rem)',
-                      boxShadow: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? '0 2px 8px rgba(37, 99, 235, 0.3)' : '0 2px 8px rgba(147, 197, 253, 0.3)'
-                    }}>
-                      {product.first_level_category_name}
-                    </span>
-                  </div>
-
-                  {/* Product ID */}
-                  <div style={{ marginBottom: '0.25rem' }}>
-                    <span style={{ 
-                      color: getHighContrastTextColor(getGradientBackground(index)) === '#000000' ? '#666666' : '#cccccc',
-                      fontSize: 'clamp(0.6rem, 1.6vw, 0.7rem)', 
-                      opacity: 0.8
-                    }}>
-                      ID: {product.product_id}
-                    </span>
-                  </div>
-                </LandscapeContentWrapper>
-              </InfoFrame>
-            </ProductInfoOverlay>
-
-            {/* Buy Now Button - Fixed to Bottom */}
-            <BuyNowButtonWrapper>
-              <BuyNowButton onClick={handleBuyNow}>
-                {translations[selectedLanguage].buyNow}
-              </BuyNowButton>
-            </BuyNowButtonWrapper>
+            {/* Product card */}
+            <ProductInfoCard>
+              <ProductTitleText>{product.product_title || 'Premium Bluetooth Headphones'}</ProductTitleText>
+              <PriceRow>
+                <PriceNew>{formatPrice(product.target_sale_price ?? product.current_price ?? 95, product.target_original_price_currency)}</PriceNew>
+                {(product.target_original_price || product.original_price) && (Number(product.target_original_price || product.original_price) > Number(product.target_sale_price || product.current_price || 0)) && (
+                  <PriceOld>{formatPrice(product.target_original_price || product.original_price, product.target_original_price_currency)}</PriceOld>
+                )}
+              </PriceRow>
+              <BuyBtn onClick={() => handleBuyNow()}>
+                <img src={cartIcon} alt="cart" width="18" height="18" style={{ display: 'block' }} />
+                Buy Now
+              </BuyBtn>
+            </ProductInfoCard>
           </VideoItem>
-        ))
+            );
+          })
         )}
         
         {/* Loading more indicator */}
@@ -1380,11 +2107,54 @@ function App() {
         )}
       </VideoContainer>
 
+      {/* Bottom bar */}
+      <BottomBar>
+        <BottomCats>
+          {[
+            { icon: fashionIcon, label: 'fashion' },
+            { icon: shoeIcon, label: 'shoe' },
+            { icon: jewelryIcon, label: 'jewelry' },
+            { icon: carIcon, label: 'car' },
+            { icon: mobileIcon, label: 'mobile' }
+          ].map((cat, i) => (
+            <CatBtn 
+              key={i} 
+              aria-label={cat.label} 
+              onClick={() => handleCategoryClick(cat.label)}
+              className={activeCategoryButton === cat.label ? 'active' : ''}
+            >
+              <img src={cat.icon} alt={cat.label} width="20" height="20" style={{ display: 'block' }} />
+            </CatBtn>
+          ))}
+          <BottomShowAll 
+            onClick={handleShowAllProducts} 
+            aria-label="show-all-products" 
+            title="Show All Products"
+            className={activeButton === 'showAll' ? 'active' : ''}
+          >
+            <img src={miniLogoIcon} alt="Show All Products" />
+          </BottomShowAll>
+          <BottomSearch 
+            onClick={() => {
+              setActiveButton('search');
+              setActiveCategoryButton(null);
+              setShowSearchModal(true);
+            }} 
+            aria-label="open-search"
+            className={activeButton === 'search' ? 'active' : ''}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" /><path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" /></svg>
+          </BottomSearch>
+        </BottomCats>
+      </BottomBar>
 
       {/* Search Modal */}
       <SearchModal $show={showSearchModal}>
         <SearchModalContent>
-          <CloseButton onClick={() => setShowSearchModal(false)}>
+          <CloseButton onClick={() => {
+            setShowSearchModal(false);
+            // Don't reset activeButton here - keep it active if search was applied
+          }}>
             ×
           </CloseButton>
           
@@ -1403,12 +2173,29 @@ function App() {
             {translations[selectedLanguage].searchAndFilter}
           </h2>
           
+          {/* Search Keyword Input */}
+          <SearchInput
+            type="text"
+            placeholder={selectedLanguage === 'en' ? 'Search products...' : selectedLanguage === 'ar' ? 'ابحث عن المنتجات...' : 'חפש מוצרים...'}
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch();
+              }
+            }}
+            style={{
+              direction: selectedLanguage === 'en' ? 'ltr' : 'rtl',
+              textAlign: selectedLanguage === 'en' ? 'left' : 'right'
+            }}
+          />
+          
+          {/* Category Select - Hidden */}
           <CategorySelect
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             style={{
-              direction: 'ltr',
-              textAlign: 'left'
+              display: 'none' // Hide category select
             }}
           >
             <option value="">All Categories</option>
@@ -1455,20 +2242,6 @@ function App() {
             <option value="asc">{translations[selectedLanguage].ascending}</option>
             <option value="desc">{translations[selectedLanguage].descending}</option>
           </SortSelect>
-
-          <ToggleContainer>
-            <ToggleSwitch
-              type="checkbox"
-              checked={justVideo}
-              onChange={(e) => setJustVideo(e.target.checked)}
-            />
-            <ToggleLabel style={{
-              direction: selectedLanguage === 'en' ? 'ltr' : 'rtl',
-              textAlign: selectedLanguage === 'en' ? 'left' : 'right'
-            }}>
-              {translations[selectedLanguage].onlyVideos}
-            </ToggleLabel>
-          </ToggleContainer>
           
           <SearchButtonModal onClick={handleSearch} style={{
             textAlign: 'center',

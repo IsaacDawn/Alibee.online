@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { imageCache } from '../utils/imageCache';
 
 const CarouselContainer = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 1rem;
-  aspect-ratio: 1 / 1;
+  border-radius: 0;
 `;
 
 const CarouselImage = styled.img`
@@ -20,7 +20,6 @@ const CarouselImage = styled.img`
   left: 0;
   opacity: ${props => props.$active ? 1 : 0};
   transition: opacity 0.5s ease-in-out;
-  aspect-ratio: 1 / 1;
 `;
 
 const CarouselVideo = styled.video`
@@ -33,7 +32,6 @@ const CarouselVideo = styled.video`
   left: 0;
   opacity: ${props => props.$active ? 1 : 0};
   transition: opacity 0.5s ease-in-out;
-  aspect-ratio: 1 / 1;
 `;
 
 const VideoOverlay = styled.div`
@@ -62,7 +60,7 @@ const VideoOverlay = styled.div`
 
 const CarouselDots = styled.div`
   position: absolute;
-  bottom: 15px;
+  bottom: 90px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -80,44 +78,6 @@ const Dot = styled.div`
 
   &:hover {
     background: #ffffff;
-  }
-`;
-
-const NavigationButton = styled.button`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.6);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 12;
-  opacity: 0.7;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.8);
-    opacity: 1;
-    transform: translateY(-50%) scale(1.1);
-  }
-
-  &:active {
-    transform: translateY(-50%) scale(0.95);
-  }
-
-  &.left {
-    left: 10px;
-  }
-
-  &.right {
-    right: 10px;
   }
 `;
 
@@ -156,157 +116,6 @@ const ActionButton = styled.button`
 `;
 
 // Video Controls Components
-const VideoControls = styled.div`
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  padding: 0.5rem 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  opacity: ${props => props.$show ? 1 : 0};
-  transition: opacity 0.3s ease;
-  z-index: 100;
-  pointer-events: ${props => props.$show ? 'auto' : 'none'};
-  border-radius: 20px;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 320px;
-`;
-
-
-const PlayPauseButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  z-index: 101;
-  position: relative;
-  flex-shrink: 0;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
-  }
-`;
-
-const MuteButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  z-index: 101;
-  position: relative;
-  flex-shrink: 0;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
-  }
-`;
-
-const TimeDisplay = styled.span`
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 400;
-  min-width: 45px;
-  text-align: center;
-  z-index: 101;
-  position: relative;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  flex-shrink: 0;
-`;
-
-const ProgressContainer = styled.div`
-  flex: 1;
-  min-width: 80px;
-  height: 18px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 9px;
-  cursor: pointer;
-  position: relative;
-  margin: 0 0.5rem;
-  z-index: 101;
-  display: flex;
-  align-items: center;
-  padding: 0 3px;
-  touch-action: none;
-  user-select: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  
-  /* Increase touch area */
-  &::before {
-    content: '';
-    position: absolute;
-    top: -12px;
-    left: 0;
-    right: 0;
-    bottom: -12px;
-    background: transparent;
-    cursor: pointer;
-    touch-action: none;
-    z-index: 102;
-  }
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.4);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-`;
-
-const ProgressBar = styled.div`
-  height: 14px;
-  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-  border-radius: 7px;
-  width: ${props => props.$progress || 0}%;
-  transition: width 0.1s ease;
-  position: relative;
-  margin: 2px 0;
-  pointer-events: none;
-  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
-
-  &::after {
-    content: '';
-    position: absolute;
-    right: -7px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 14px;
-    height: 14px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 2px #3b82f6;
-    border: 2px solid white;
-    cursor: grab;
-    pointer-events: none;
-    transition: all 0.2s ease;
-    
-    &:active {
-      cursor: grabbing;
-      transform: translateY(-50%) scale(1.1);
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), 0 0 0 3px #3b82f6;
-    }
-  }
-`;
 
 
 const ProductImageCarouselTikTok = ({ 
@@ -317,7 +126,11 @@ const ProductImageCarouselTikTok = ({
   isInView = true,
   onLike = () => {},
   onShare = () => {},
-  isLiked = false
+  isLiked = false,
+  showActions = true,
+  shouldLoadAllImages = false, // New prop: only load all images when product is in view
+  shouldLoadFirstImage = true, // New prop: allow loading first image (for current and next product)
+  loadPriority = 0 // New prop: priority level (1=current main, 2=next main, 3=current others, 4=next others)
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(autoPlay);
@@ -329,15 +142,414 @@ const ProductImageCarouselTikTok = ({
   const [isMuted, setIsMuted] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [showControls, setShowControls] = useState(false);
+  
+  // Lazy loading state - track which images are loaded
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const loadingImagesRef = useRef(new Set()); // Track images currently loading
+  const loadingVideosRef = useRef(new Set()); // Track videos currently loading
+  const imageLoadFlagsRef = useRef(new Map()); // Track loading flags for each image (to cancel)
+  const videoLoadFlagsRef = useRef(new Map()); // Track loading flags for each video
+  
+  // Global image cache - shared across all components to prevent re-downloading
+  // Check if image is already loaded in browser cache
+  const checkImageCache = (url) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+      // If image is in browser cache, onload fires immediately
+      if (img.complete) {
+        resolve(true);
+      }
+    });
+  };
   
   const videoRef = useRef(null);
   const carouselRef = useRef(null);
   const isDragging = useRef(false);
+  
+  // Log loading status periodically
+  useEffect(() => {
+    const logInterval = setInterval(() => {
+      const totalLoading = loadingImagesRef.current.size + loadingVideosRef.current.size;
+      const totalLoaded = loadedImages.size;
+      if (totalLoading > 0 || totalLoaded > 0) {
+        console.log(`[ProductImageCarousel] Status - Loading: ${loadingImagesRef.current.size} images, ${loadingVideosRef.current.size} videos | Loaded: ${totalLoaded} images`);
+      }
+    }, 2000); // Log every 2 seconds
+    
+    return () => clearInterval(logInterval);
+  }, [loadedImages]);
 
   // Create combined array: video first (if exists), then images
   const mediaItems = videoUrl ? [videoUrl, ...images] : images;
   const isVideoActive = videoUrl && currentIndex === 0;
+  
+  // Check if current media item is loaded
+  const getCurrentMediaUrl = () => {
+    if (isVideoActive) return videoUrl;
+    const imageIndex = videoUrl ? currentIndex - 1 : currentIndex;
+    if (imageIndex >= 0 && imageIndex < images.length) {
+      return images[imageIndex];
+    }
+    return null;
+  };
+  
+  const currentMediaUrl = getCurrentMediaUrl();
+  const isCurrentMediaLoaded = isVideoActive 
+    ? true // Video loading is handled separately
+    : (currentMediaUrl ? loadedImages.has(currentMediaUrl) : false);
+
+  // Cancel all non-priority image loads when shouldLoadFirstImage changes
+  // BUT: Don't cancel first image loads - they should always load for current and next product
+  useEffect(() => {
+    if (!shouldLoadFirstImage) {
+      // Cancel all image loads except first image if product is no longer priority
+      imageLoadFlagsRef.current.forEach((flag, imageUrl) => {
+        // Don't cancel first image - it should load for current/next products
+        if (images[0] === imageUrl) return;
+        
+        if (!loadingImagesRef.current.has(imageUrl)) return;
+        flag.cancelled = true; // Mark as cancelled
+        loadingImagesRef.current.delete(imageUrl);
+        imageLoadFlagsRef.current.delete(imageUrl);
+        console.log(`[ProductImageCarousel] Cancelled non-priority image load: ${imageUrl.substring(0, 50)}...`);
+      });
+    }
+  }, [shouldLoadFirstImage, images]);
+
+  // Load first media (video or image) with priority:
+  // Priority 1: Current card main image/video (loadPriority = 1, immediate)
+  // Priority 2: Next card main image/video (loadPriority = 2, small delay)
+  useEffect(() => {
+    if (!shouldLoadFirstImage) return;
+    
+    // Determine priority and delay
+    const priorityLevel = loadPriority === 1 ? 'Priority 1 (Current card main)' : 
+                          loadPriority === 2 ? 'Priority 2 (Next card main)' : 
+                          'Unknown priority';
+    const loadDelay = loadPriority === 2 ? 50 : 0; // 50ms delay for next card to ensure current loads first
+    
+    // If product has video, load video first (video is the first media item)
+    if (videoUrl) {
+      if (!loadingVideosRef.current.has(videoUrl)) {
+        loadingVideosRef.current.add(videoUrl);
+        console.log(`[ProductImageCarousel] Starting to load video (${priorityLevel}): ${videoUrl.substring(0, 50)}...`);
+        // Video will be loaded by the video element itself when rendered
+      }
+      return; // Don't load first image if video exists (video is first)
+    }
+    
+    // If no video, load first image
+    if (images.length === 0) return;
+    
+    const firstImage = images[0];
+    if (firstImage && !loadedImages.has(firstImage) && !loadingImagesRef.current.has(firstImage)) {
+      // Cancel any existing load for this image
+      const existingFlag = imageLoadFlagsRef.current.get(firstImage);
+      if (existingFlag) {
+        existingFlag.cancelled = true;
+      }
+      
+      loadingImagesRef.current.add(firstImage);
+      const loadFlag = { cancelled: false };
+      imageLoadFlagsRef.current.set(firstImage, loadFlag);
+      
+      console.log(`[ProductImageCarousel] Starting to load first image (${priorityLevel}): ${firstImage.substring(0, 50)}...`);
+      
+      // Check if image is already cached
+      if (imageCache.isCached(firstImage)) {
+        console.log(`[ProductImageCarousel] ✓ First image found in cache (${priorityLevel}): ${firstImage.substring(0, 50)}...`);
+        setLoadedImages(prev => {
+          const newSet = new Set(prev);
+          newSet.add(firstImage);
+          return newSet;
+        });
+        loadingImagesRef.current.delete(firstImage);
+        imageLoadFlagsRef.current.delete(firstImage);
+        return;
+      }
+      
+      // Load with delay based on priority
+      setTimeout(() => {
+        // Preload using cache system
+        imageCache.preloadImage(firstImage).then((cachedImg) => {
+          const flag = imageLoadFlagsRef.current.get(firstImage);
+          if (flag && flag.cancelled) return;
+          
+          if (cachedImg) {
+            loadingImagesRef.current.delete(firstImage);
+            imageLoadFlagsRef.current.delete(firstImage);
+            setLoadedImages(prev => {
+              const newSet = new Set(prev);
+              newSet.add(firstImage);
+              return newSet;
+            });
+            console.log(`[ProductImageCarousel] ✓ Loaded first image from cache (${priorityLevel}): ${firstImage.substring(0, 50)}...`);
+          }
+        });
+        
+        // Also load directly for immediate display
+        const img = new Image();
+        img.src = firstImage;
+        img.onload = () => {
+          const flag = imageLoadFlagsRef.current.get(firstImage);
+          if (flag && flag.cancelled) return; // Don't process if cancelled
+          loadingImagesRef.current.delete(firstImage);
+          imageLoadFlagsRef.current.delete(firstImage);
+          setLoadedImages(prev => {
+            const newSet = new Set(prev);
+            newSet.add(firstImage);
+            return newSet;
+          });
+          console.log(`[ProductImageCarousel] ✓ Loaded first image (${priorityLevel}): ${firstImage.substring(0, 50)}...`);
+        };
+        img.onerror = () => {
+          const flag = imageLoadFlagsRef.current.get(firstImage);
+          if (flag && flag.cancelled) return; // Don't process if cancelled
+          loadingImagesRef.current.delete(firstImage);
+          imageLoadFlagsRef.current.delete(firstImage);
+          console.warn(`[ProductImageCarousel] ✗ Failed to load first image (${priorityLevel}): ${firstImage.substring(0, 50)}...`);
+        };
+      }, loadDelay);
+    }
+  }, [images, shouldLoadFirstImage, videoUrl, loadedImages, loadPriority]); // Run when images, shouldLoadFirstImage, videoUrl, or loadPriority changes
+
+  // Cancel all non-priority image loads when shouldLoadAllImages changes
+  useEffect(() => {
+    if (!shouldLoadAllImages) {
+      // Cancel all additional image loads if product is no longer priority
+      imageLoadFlagsRef.current.forEach((flag, imageUrl) => {
+        // Don't cancel first image (it's handled separately)
+        if (images[0] === imageUrl) return;
+        
+        if (loadingImagesRef.current.has(imageUrl)) {
+          flag.cancelled = true; // Mark as cancelled
+          loadingImagesRef.current.delete(imageUrl);
+          imageLoadFlagsRef.current.delete(imageUrl);
+          console.log(`[ProductImageCarousel] Cancelled non-priority image load: ${imageUrl.substring(0, 50)}...`);
+        }
+      });
+    }
+  }, [shouldLoadAllImages, images]);
+
+  // Load all other images based on priority:
+  // Priority 3: Other images of current card (shouldLoadAllImages = true, loadPriority = 1)
+  // Priority 4: Other images of next card (shouldLoadAllImages = true, loadPriority = 2)
+  useEffect(() => {
+    // Only load other images if shouldLoadAllImages is true
+    if (!shouldLoadAllImages || images.length === 0) {
+      // Cancel any ongoing loads for additional images
+      images.forEach((imageUrl, index) => {
+        if (index === 0) return; // Don't cancel first image
+        const flag = imageLoadFlagsRef.current.get(imageUrl);
+        if (flag && loadingImagesRef.current.has(imageUrl)) {
+          flag.cancelled = true;
+          loadingImagesRef.current.delete(imageUrl);
+          imageLoadFlagsRef.current.delete(imageUrl);
+          console.log(`[ProductImageCarousel] Cancelled image load (not priority): ${imageUrl.substring(0, 50)}...`);
+        }
+      });
+      return;
+    }
+    
+    // Determine priority level for logging
+    const priorityLevel = loadPriority === 1 ? 'Priority 3 (Current card other images)' : 
+                          loadPriority === 2 ? 'Priority 4 (Next card other images)' : 
+                          'Unknown priority';
+    
+    console.log(`[ProductImageCarousel] Loading other images - ${priorityLevel} (${images.length - 1} additional images)`);
+    
+    // Load additional images based on priority
+    images.forEach((imageUrl, index) => {
+      // Skip first image (already loaded or will be loaded separately)
+      if (index === 0) return;
+      
+      if (imageUrl && !loadedImages.has(imageUrl) && !loadingImagesRef.current.has(imageUrl)) {
+        // Check if image is already cached
+        if (imageCache.isCached(imageUrl)) {
+          console.log(`[ProductImageCarousel] ✓ Image ${index + 1} found in cache (${priorityLevel}): ${imageUrl.substring(0, 50)}...`);
+          if (shouldLoadAllImages) {
+            setLoadedImages(prev => {
+              const newSet = new Set(prev);
+              newSet.add(imageUrl);
+              return newSet;
+            });
+          }
+          return;
+        }
+        
+        // Cancel any existing load for this image
+        const existingFlag = imageLoadFlagsRef.current.get(imageUrl);
+        if (existingFlag) {
+          existingFlag.cancelled = true;
+        }
+        
+        loadingImagesRef.current.add(imageUrl);
+        const loadFlag = { cancelled: false };
+        imageLoadFlagsRef.current.set(imageUrl, loadFlag);
+        
+        console.log(`[ProductImageCarousel] Starting to load image ${index + 1} (${priorityLevel}): ${imageUrl.substring(0, 50)}...`);
+        
+        // Use cache system to preload with delay based on priority
+        // Priority 3 (current card) loads immediately
+        // Priority 4 (next card) loads with a small delay to ensure priority 3 loads first
+        const loadDelay = loadPriority === 2 ? 100 : 0; // 100ms delay for next card images
+        
+        setTimeout(() => {
+          imageCache.preloadImage(imageUrl).then((cachedImg) => {
+            const flag = imageLoadFlagsRef.current.get(imageUrl);
+            if (flag && flag.cancelled) return;
+            if (!shouldLoadAllImages) return;
+            
+            if (cachedImg) {
+              loadingImagesRef.current.delete(imageUrl);
+              imageLoadFlagsRef.current.delete(imageUrl);
+              setLoadedImages(prev => {
+                const newSet = new Set(prev);
+                newSet.add(imageUrl);
+                return newSet;
+              });
+              console.log(`[ProductImageCarousel] ✓ Loaded image ${index + 1} from cache (${priorityLevel}): ${imageUrl.substring(0, 50)}...`);
+            }
+          });
+          
+          // Also load directly for immediate display
+          const img = new Image();
+          img.src = imageUrl;
+          img.onload = () => {
+            const flag = imageLoadFlagsRef.current.get(imageUrl);
+            if (flag && flag.cancelled) return; // Don't process if cancelled
+            loadingImagesRef.current.delete(imageUrl);
+            imageLoadFlagsRef.current.delete(imageUrl);
+            if (shouldLoadAllImages) {
+              setLoadedImages(prev => {
+                const newSet = new Set(prev);
+                newSet.add(imageUrl);
+                return newSet;
+              });
+              console.log(`[ProductImageCarousel] ✓ Loaded image ${index + 1} (${priorityLevel}): ${imageUrl.substring(0, 50)}...`);
+            } else {
+              console.log(`[ProductImageCarousel] ✗ Image loaded but no longer priority, discarding: ${imageUrl.substring(0, 50)}...`);
+            }
+          };
+          img.onerror = () => {
+            const flag = imageLoadFlagsRef.current.get(imageUrl);
+            if (flag && flag.cancelled) return; // Don't process if cancelled
+            loadingImagesRef.current.delete(imageUrl);
+            imageLoadFlagsRef.current.delete(imageUrl);
+            console.warn(`[ProductImageCarousel] ✗ Failed to load image ${index + 1} (${priorityLevel}): ${imageUrl.substring(0, 50)}...`);
+          };
+        }, loadDelay);
+      }
+    });
+  }, [shouldLoadAllImages, images, loadedImages, loadPriority]);
+
+  // Load next/previous image when user navigates to it
+  // Only if product is in view (shouldLoadAllImages is true) or is currently visible (isInView)
+  // BUT: First image should always load for current and next product (handled separately)
+  useEffect(() => {
+    // If all images should be loaded (product in view - IntersectionObserver), skip this - they're handled by the other effect
+    if (shouldLoadAllImages || images.length === 0) return;
+    
+    // Only load individual images if product is currently visible (isInView)
+    // This is for when user manually navigates through images
+    if (!isInView) {
+      // Cancel any ongoing loads for additional images (not first image)
+      imageLoadFlagsRef.current.forEach((flag, imageUrl) => {
+        // Don't cancel first image - it should always load for current/next products
+        if (images[0] === imageUrl) return;
+        
+        if (loadingImagesRef.current.has(imageUrl)) {
+          flag.cancelled = true; // Mark as cancelled
+          loadingImagesRef.current.delete(imageUrl);
+          imageLoadFlagsRef.current.delete(imageUrl);
+        }
+      });
+      return;
+    }
+    
+    // Only load additional images if product is current (isInView = true)
+    // First image is handled separately and always loads for current/next products
+    const imageIndex = videoUrl ? currentIndex - 1 : currentIndex;
+    if (imageIndex >= 0 && imageIndex < images.length) {
+      const imageUrl = images[imageIndex];
+      // Skip first image - it's handled separately and always loads
+      if (imageIndex === 0) return;
+      
+      if (imageUrl && !loadedImages.has(imageUrl) && !loadingImagesRef.current.has(imageUrl)) {
+        // Check if image is already cached
+        if (imageCache.isCached(imageUrl)) {
+          console.log(`[ProductImageCarousel] ✓ Image on navigation found in cache: ${imageUrl.substring(0, 50)}...`);
+          if (isInView) {
+            setLoadedImages(prev => {
+              const newSet = new Set(prev);
+              newSet.add(imageUrl);
+              return newSet;
+            });
+          }
+          return;
+        }
+        
+        // Cancel any existing load for this image
+        const existingFlag = imageLoadFlagsRef.current.get(imageUrl);
+        if (existingFlag) {
+          existingFlag.cancelled = true;
+        }
+        
+        loadingImagesRef.current.add(imageUrl);
+        const loadFlag = { cancelled: false };
+        imageLoadFlagsRef.current.set(imageUrl, loadFlag);
+        
+        console.log(`[ProductImageCarousel] Starting to load image on navigation (PRIORITY) (index ${imageIndex}): ${imageUrl.substring(0, 50)}...`);
+        
+        // Use cache system
+        imageCache.preloadImage(imageUrl).then((cachedImg) => {
+          const flag = imageLoadFlagsRef.current.get(imageUrl);
+          if (flag && flag.cancelled) return;
+          if (!isInView) return;
+          
+          if (cachedImg) {
+            loadingImagesRef.current.delete(imageUrl);
+            imageLoadFlagsRef.current.delete(imageUrl);
+            setLoadedImages(prev => {
+              const newSet = new Set(prev);
+              newSet.add(imageUrl);
+              return newSet;
+            });
+            console.log(`[ProductImageCarousel] ✓ Loaded image on navigation from cache: ${imageUrl.substring(0, 50)}...`);
+          }
+        });
+        
+        // Also load directly for immediate display
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => {
+          const flag = imageLoadFlagsRef.current.get(imageUrl);
+          if (flag && flag.cancelled) return;
+          loadingImagesRef.current.delete(imageUrl);
+          imageLoadFlagsRef.current.delete(imageUrl);
+          // Only add if product is still in view
+          if (isInView) {
+            setLoadedImages(prev => {
+              const newSet = new Set(prev);
+              newSet.add(imageUrl);
+              return newSet;
+            });
+            console.log(`[ProductImageCarousel] ✓ Loaded image on navigation: ${imageUrl.substring(0, 50)}...`);
+          }
+        };
+        img.onerror = () => {
+          const flag = imageLoadFlagsRef.current.get(imageUrl);
+          if (flag && flag.cancelled) return;
+          loadingImagesRef.current.delete(imageUrl);
+          imageLoadFlagsRef.current.delete(imageUrl);
+          console.warn(`[ProductImageCarousel] ✗ Failed to load image on navigation: ${imageUrl.substring(0, 50)}...`);
+        };
+      }
+    }
+  }, [currentIndex, images, videoUrl, shouldLoadAllImages, isInView, loadedImages]);
 
   // Handle video playback when in view and video is active
   useEffect(() => {
@@ -422,19 +634,43 @@ const ProductImageCarouselTikTok = ({
 
   // Auto-hide controls disabled - controls stay visible
 
-  // Handle auto-play for media carousel
+  // Handle auto-play for media carousel - only when product is in view and current media is loaded
   useEffect(() => {
-    // Disable auto-play if product has video
-    if (!isAutoPlay || mediaItems.length <= 1 || videoUrl) return;
+    // Disable auto-play if:
+    // 1. Auto-play is disabled
+    // 2. Product has video (videos handle their own playback)
+    // 3. Only one media item
+    // 4. Product is not in view (isInView is false)
+    // 5. Current media is not loaded yet (wait for it to load)
+    if (!isAutoPlay || mediaItems.length <= 1 || videoUrl || !isInView || !isCurrentMediaLoaded) {
+      return;
+    }
 
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex === mediaItems.length - 1 ? 0 : prevIndex + 1
-      );
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = prevIndex === mediaItems.length - 1 ? 0 : prevIndex + 1;
+        // Check if next media is loaded before switching
+        const nextImageIndex = videoUrl ? nextIndex - 1 : nextIndex;
+        if (nextIndex === 0 && videoUrl) {
+          // Next is video, it's always available
+          return nextIndex;
+        } else if (nextImageIndex >= 0 && nextImageIndex < images.length) {
+          const nextImageUrl = images[nextImageIndex];
+          // Only switch if next image is loaded
+          if (loadedImages.has(nextImageUrl)) {
+            return nextIndex;
+          } else {
+            // Next image not loaded, wait
+            console.log(`[ProductImageCarousel] Waiting for image ${nextImageIndex + 1} to load before switching...`);
+            return prevIndex; // Stay on current image
+          }
+        }
+        return nextIndex;
+      });
     }, autoPlayInterval);
 
     return () => clearInterval(interval);
-  }, [mediaItems.length, isAutoPlay, autoPlayInterval, videoUrl]);
+  }, [mediaItems.length, isAutoPlay, autoPlayInterval, videoUrl, isInView, isCurrentMediaLoaded, loadedImages, images]);
 
   // Video control functions
   const togglePlayPause = () => {
@@ -528,17 +764,9 @@ const ProductImageCarouselTikTok = ({
   };
 
   const handleVideoClick = () => {
-    setShowControls(true);
     // Toggle play/pause when clicking on video
     togglePlayPause();
   };
-
-  // Auto-show controls when video is active and keep them visible
-  useEffect(() => {
-    if (isVideoActive) {
-      setShowControls(true);
-    }
-  }, [isVideoActive]);
 
   const handleDotClick = (index) => {
     setCurrentIndex(index);
@@ -622,8 +850,8 @@ const ProductImageCarouselTikTok = ({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Show video if it's the current active item */}
-      {isVideoActive && (
+      {/* Show video if it's the current active item and should be loaded */}
+      {isVideoActive && shouldLoadFirstImage && (
         <CarouselVideo
           ref={videoRef}
           src={videoUrl}
@@ -631,48 +859,82 @@ const ProductImageCarouselTikTok = ({
           muted={isMuted}
           loop
           playsInline
+          preload={shouldLoadFirstImage ? "auto" : "none"}
+          onLoadStart={() => {
+            if (!loadingVideosRef.current.has(videoUrl)) {
+              loadingVideosRef.current.add(videoUrl);
+              console.log(`[ProductImageCarousel] Video load started: ${videoUrl.substring(0, 50)}...`);
+            }
+          }}
+          onLoadedData={() => {
+            loadingVideosRef.current.delete(videoUrl);
+            console.log(`[ProductImageCarousel] ✓ Video loaded: ${videoUrl.substring(0, 50)}...`);
+          }}
           onClick={handleVideoClick}
           onError={() => {
-            console.error('Video failed to load:', videoUrl);
+            loadingVideosRef.current.delete(videoUrl);
+            console.error(`[ProductImageCarousel] ✗ Video failed to load: ${videoUrl.substring(0, 50)}...`);
             // Move to next item if video fails
             goToNext();
           }}
         />
       )}
       
-      {/* Show images */}
+      {/* Show images - only render loaded images */}
       {images.map((imageUrl, index) => {
         const imageIndex = videoUrl ? index + 1 : index; // Adjust index if video exists
+        const isLoaded = loadedImages.has(imageUrl);
+        const isCurrent = currentIndex === imageIndex;
+        
+        // Only render if image is loaded
+        // But if it's the current image and not loaded yet, show a placeholder
+        if (!isLoaded) {
+          if (isCurrent) {
+            // Show loading placeholder for current image
+            return (
+              <div
+                key={index}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'loading 1.5s infinite',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#999',
+                  fontSize: '14px'
+                }}
+              >
+                <style>{`
+                  @keyframes loading {
+                    0% { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                  }
+                `}</style>
+                Loading image {index + 1}...
+              </div>
+            );
+          }
+          // Don't render placeholder for non-current images
+          return null;
+        }
+        
         return (
           <CarouselImage
             key={index}
             src={imageUrl}
             alt={`Product image ${index + 1}`}
-            $active={currentIndex === imageIndex}
+            $active={isCurrent}
+            loading="lazy"
           />
         );
       })}
       
-      {/* Navigation buttons - show if more than one media item */}
-      {mediaItems.length > 1 && (
-        <>
-          <NavigationButton 
-            className="left" 
-            onClick={goToPrevious}
-            aria-label="Previous media"
-          >
-            ‹
-          </NavigationButton>
-          <NavigationButton 
-            className="right" 
-            onClick={goToNext}
-            aria-label="Next media"
-          >
-            ›
-          </NavigationButton>
-        </>
-      )}
-
       {/* Show dots for all media items */}
       {mediaItems.length > 1 && (
         <CarouselDots>
@@ -691,68 +953,28 @@ const ProductImageCarouselTikTok = ({
         </CarouselDots>
       )}
       
-      {/* Video Controls - Only show when video is active */}
-      {isVideoActive && (
-        <VideoControls $show={showControls}>
-          <PlayPauseButton onClick={togglePlayPause}>
-            {isPlaying ? (
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+      {/* Action Buttons - Inside Carousel (optional) */}
+      {showActions && (
+        <ActionButtons>
+          <div>
+            <ActionButton 
+              onClick={onLike}
+              className={isLiked ? 'liked' : ''}
+            >
+              <svg width="clamp(20px, 6vw, 24px)" height="clamp(20px, 6vw, 24px)" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
               </svg>
-            ) : (
-              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
+            </ActionButton>
+          </div>
+          <div>
+            <ActionButton onClick={onShare}>
+              <svg width="clamp(20px, 6vw, 24px)" height="clamp(20px, 6vw, 24px)" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
               </svg>
-            )}
-          </PlayPauseButton>
-          
-          <MuteButton onClick={toggleMute}>
-            {isMuted ? (
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-              </svg>
-            ) : (
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-              </svg>
-            )}
-          </MuteButton>
-          
-          <TimeDisplay>{formatTime(currentTime)}</TimeDisplay>
-          
-          <ProgressContainer 
-            onClick={handleProgressClick}
-            onTouchStart={handleProgressTouchStart}
-            onTouchMove={handleProgressTouchMove}
-            onTouchEnd={handleProgressTouchEnd}
-          >
-            <ProgressBar $progress={(currentTime / duration) * 100} />
-          </ProgressContainer>
-          
-          <TimeDisplay>{formatTime(duration)}</TimeDisplay>
-        </VideoControls>
+            </ActionButton>
+          </div>
+        </ActionButtons>
       )}
-
-      {/* Action Buttons - Inside Carousel */}
-      <ActionButtons>
-        <div>
-          <ActionButton 
-            onClick={onLike}
-            className={isLiked ? 'liked' : ''}
-          >
-            <svg width="clamp(20px, 6vw, 24px)" height="clamp(20px, 6vw, 24px)" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-          </ActionButton>
-        </div>
-        <div>
-          <ActionButton onClick={onShare}>
-            <svg width="clamp(20px, 6vw, 24px)" height="clamp(20px, 6vw, 24px)" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
-            </svg>
-          </ActionButton>
-        </div>
-      </ActionButtons>
     </CarouselContainer>
   );
 };
