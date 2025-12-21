@@ -14,6 +14,7 @@ import carIcon from './icons/car.svg';
 import mobileIcon from './icons/mobile.svg';
 import cartIcon from './icons/cart.svg';
 import miniLogoIcon from './icons/Mini_Logo.svg';
+import { getLikedProductsCount } from './utils/likedProductsFilter';
 
 const AppContainer = styled.div`
   height: 100vh;
@@ -141,7 +142,7 @@ const ProductInfoCard = styled.div`
   position: absolute;
   left: 16px;
   right: 96px;
-  bottom: 112px;
+  bottom: 140px;
   background: rgba(7, 33, 33, 0.2);
   color: #fff;
   border-radius: 5px;
@@ -151,6 +152,14 @@ const ProductInfoCard = styled.div`
   backdrop-filter: blur(3px);
   display: flex;
   flex-direction: column;
+  z-index: 50;
+  
+  @media (max-width: 480px) {
+    bottom: 120px;
+    left: 12px;
+    right: 80px;
+    padding: 14px;
+  }
 `;
 
 const ProductTitleText = styled.h3`
@@ -199,26 +208,36 @@ const BuyBtn = styled.button`
   &:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(78,205,196,0.5); }
 `;
 
-const QuickReturn = styled.button`
-  position: absolute;
-  right: 16px;
-  bottom: 120px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(0,0,0,0.8);
+const ShareBtn = styled.button`
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 24px rgba(102,126,234,0.35);
+  align-self: flex-start;
+  margin-top: 8px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
+  gap: 8px;
 
-  &:focus { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
-  &:active { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+  &:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(102,126,234,0.5); }
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  
+  button {
+    flex: 1;
+  }
 `;
 
 const BottomBar = styled.div`
@@ -240,6 +259,16 @@ const BottomBar = styled.div`
   max-width: 100vw;
   overflow: visible;
   box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 8px;
+    height: 70px;
+    min-height: 70px;
+  }
 `;
 
 const BottomCats = styled.div`
@@ -256,16 +285,37 @@ const BottomCats = styled.div`
   overflow-y: hidden;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
   
   &::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
   }
   
-  /* Enable horizontal scroll on mobile if needed */
-  @media (max-width: 480px) {
+  /* Responsive adjustments - always centered */
+  @media (max-width: 1024px) {
     gap: 6px;
     padding: 8px 4px;
+    justify-content: center;
+  }
+  
+  @media (max-width: 768px) {
+    gap: 5px;
+    padding: 8px 2px;
+    justify-content: center;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 4px;
+    padding: 8px 2px;
     min-height: 56px;
+    justify-content: center;
+  }
+  
+  @media (max-width: 360px) {
+    gap: 3px;
+    padding: 8px 1px;
+    justify-content: center;
   }
 `;
 
@@ -299,14 +349,32 @@ const CatBtn = styled.button`
     background: rgba(78, 205, 196, 0.95);
   }
   
-  @media (max-width: 480px) {
+  @media (max-width: 1024px) {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+  
+  @media (max-width: 768px) {
     width: 40px;
     height: 40px;
     min-width: 40px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
     
     &.active {
       box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.3), 0 0 0 4px rgba(78, 205, 196, 0.15);
     }
+  }
+  
+  @media (max-width: 360px) {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
   }
 `;
 
@@ -342,14 +410,32 @@ const BottomSearch = styled.button`
     background: rgba(78, 205, 196, 1);
   }
   
-  @media (max-width: 480px) {
+  @media (max-width: 1024px) {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+  
+  @media (max-width: 768px) {
     width: 40px;
     height: 40px;
     min-width: 40px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
     
     &.active {
       box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.3), 0 0 0 4px rgba(78, 205, 196, 0.15), 0 10px 30px rgba(78,205,196,0.4);
     }
+  }
+  
+  @media (max-width: 360px) {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
   }
 `;
 
@@ -404,14 +490,32 @@ const BottomShowAll = styled.button`
     transform: none;
   }
   
-  @media (max-width: 480px) {
+  @media (max-width: 1024px) {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+  
+  @media (max-width: 768px) {
     width: 40px;
     height: 40px;
     min-width: 40px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
     
     &.active {
       box-shadow: 0 0 0 2px rgba(255, 140, 66, 0.3), 0 0 0 4px rgba(255, 140, 66, 0.15), 0 10px 30px rgba(255, 140, 66, 0.4);
     }
+  }
+  
+  @media (max-width: 360px) {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
   }
 `;
 
@@ -607,6 +711,72 @@ const Toast = styled.div`
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+  }
+`;
+
+const ShareModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+`;
+
+const ShareModalContent = styled.div`
+  background: rgba(20, 20, 20, 0.95);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+`;
+
+const ShareModalTitle = styled.h3`
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  text-align: center;
+`;
+
+const ShareOptions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+`;
+
+const ShareOption = styled.button`
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
   }
 `;
 
@@ -1058,6 +1228,7 @@ function App() {
   const [error, setError] = useState(null);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
   const [hasMore, setHasMore] = useState(true);
@@ -1558,6 +1729,59 @@ function App() {
     }
   };
 
+  const handleSocialShare = (platform) => {
+    const product = displayedProducts[currentProductIndex];
+    const shareUrl = encodeURIComponent(product.promotion_link || window.location.href);
+    const shareText = encodeURIComponent(`Check out this product: ${product.product_title}`);
+    
+    // Close modal first
+    setShowShareModal(false);
+    
+    let shareLink = '';
+    
+    switch(platform) {
+      case 'whatsapp':
+        shareLink = `https://wa.me/?text=${shareText}%20${shareUrl}`;
+        break;
+      case 'telegram':
+        shareLink = `https://t.me/share/url?url=${shareUrl}&text=${shareText}`;
+        break;
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+        break;
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
+        break;
+      case 'copy':
+        // Copy to clipboard
+        navigator.clipboard.writeText(product.promotion_link || window.location.href).then(() => {
+          setToastMessage('Link copied to clipboard!');
+          setTimeout(() => setToastMessage(''), 3000);
+        }).catch(() => {
+          setToastMessage('Unable to copy link');
+          setTimeout(() => setToastMessage(''), 3000);
+        });
+        return;
+      default:
+        // Use Web Share API if available
+        handleShare();
+        return;
+    }
+    
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'width=600,height=400');
+    }
+  };
+
+  const openShareModal = () => {
+    // Try Web Share API first on mobile
+    if (navigator.share && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      handleShare();
+    } else {
+      setShowShareModal(true);
+    }
+  };
+
   const handleSearch = async () => {
     // Validate search keyword
     if (!searchKeyword || !searchKeyword.trim()) {
@@ -1723,6 +1947,123 @@ function App() {
     } catch (err) {
       setError(err.message || 'Failed to load all products');
       console.error('Error loading all products:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCurrency]);
+
+  const handleShowLikedProducts = useCallback(async () => {
+    console.log('Show liked products clicked');
+    setActiveButton('liked');
+    setActiveCategoryButton(null); // Clear category button selection
+    setLoading(true);
+    setError(null);
+    setSelectedCategory('');
+    setCurrentProductIndex(0);
+
+    // Scroll to top
+    if (videoContainerRef.current) {
+      videoContainerRef.current.scrollTop = 0;
+    }
+
+    try {
+      // Get liked product IDs from localStorage
+      const savedLikes = localStorage.getItem('alibee_liked_products');
+      let likedProductIds = [];
+      
+      if (savedLikes) {
+        try {
+          likedProductIds = JSON.parse(savedLikes);
+        } catch (error) {
+          console.error('Error parsing liked products from localStorage:', error);
+          likedProductIds = [];
+        }
+      }
+
+      if (!likedProductIds || likedProductIds.length === 0) {
+        setToastMessage('No liked products found. Like some products to see them here!');
+        setTimeout(() => setToastMessage(''), 3000);
+        setProducts([]);
+        setDisplayedProducts([]);
+        setCurrentProductIndex(0);
+        setHasMore(false);
+        setLoading(false);
+        return;
+      }
+
+      console.log(`Requesting ${likedProductIds.length} liked products from backend`);
+
+      // Request products from backend by IDs
+      const response = await productService.getProductsByIds(likedProductIds, selectedCurrency);
+      console.log('Liked products response from backend:', response);
+
+      if (!response || !response.products || response.products.length === 0) {
+        setToastMessage('No liked products found. Like some products to see them here!');
+        setTimeout(() => setToastMessage(''), 3000);
+        setProducts([]);
+        setDisplayedProducts([]);
+        setCurrentProductIndex(0);
+        setHasMore(false);
+        setLoading(false);
+        return;
+      }
+
+      // Transform products to match the expected format
+      const transformedProducts = (response.products || []).map(product => {
+        // Parse discount percentage
+        let discountPercentage = 0;
+        if (product.discount) {
+          const discountStr = String(product.discount).replace('%', '').trim();
+          discountPercentage = parseFloat(discountStr) || 0;
+        }
+        
+        // Parse rating
+        let rating = 0;
+        if (product.evaluate_rate) {
+          rating = parseFloat(product.evaluate_rate) || 0;
+        } else if (product.rating_weighted) {
+          rating = parseFloat(product.rating_weighted) || 0;
+        } else if (product.rating) {
+          rating = parseFloat(product.rating) || 0;
+        }
+        
+        return {
+          product_id: product.product_id,
+          product_title: product.custom_title || product.product_title || '',
+          product_main_image_url: product.product_main_image_url || '',
+          target_sale_price: product.target_sale_price || product.sale_price || '0',
+          target_original_price: product.target_original_price || product.original_price || '0',
+          target_original_price_currency: product.target_original_price_currency || product.target_sale_price_currency || product.sale_price_currency || selectedCurrency,
+          discount: product.discount || '0%',
+          evaluate_rate: rating,
+          shop_name: product.shop_name || '',
+          promotion_link: product.promotion_link || product.product_detail_url || '',
+          product_video_url: product.product_video_url || '',
+          product_small_image_urls: product.product_small_image_urls || {},
+          first_level_category_name: product.first_level_category_name || '',
+          lastest_volume: product.lastest_volume || 0
+        };
+      });
+
+      console.log(`Successfully loaded ${transformedProducts.length} liked products`);
+
+      // Clear existing products and set new ones
+      setProducts(transformedProducts);
+      setDisplayedProducts(transformedProducts.slice(0, initialLoadCount));
+      setCurrentProductIndex(0);
+      setHasMore(transformedProducts.length > initialLoadCount);
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to load liked products';
+      setError(errorMessage);
+      setToastMessage(errorMessage);
+      setTimeout(() => setToastMessage(''), 5000);
+      console.error('Error loading liked products:', err);
+      
+      // Clear products on error
+      setProducts([]);
+      setDisplayedProducts([]);
+      setCurrentProductIndex(0);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -2070,14 +2411,6 @@ function App() {
             </SideActions>
             ); })()}
 
-            {/* Quick return */}
-            <QuickReturn onClick={() => videoContainerRef.current && (videoContainerRef.current.scrollTop = 0)} aria-label="back-to-top">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </QuickReturn>
-
             {/* Product card */}
             <ProductInfoCard>
               <ProductTitleText>{product.product_title || 'Premium Bluetooth Headphones'}</ProductTitleText>
@@ -2087,10 +2420,22 @@ function App() {
                   <PriceOld>{formatPrice(product.target_original_price || product.original_price, product.target_original_price_currency)}</PriceOld>
                 )}
               </PriceRow>
-              <BuyBtn onClick={() => handleBuyNow()}>
-                <img src={cartIcon} alt="cart" width="18" height="18" style={{ display: 'block' }} />
-                Buy Now
-              </BuyBtn>
+              <ButtonRow>
+                <BuyBtn onClick={() => handleBuyNow()}>
+                  <img src={cartIcon} alt="cart" width="18" height="18" style={{ display: 'block' }} />
+                  Buy
+                </BuyBtn>
+                <ShareBtn onClick={openShareModal}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  Share
+                </ShareBtn>
+              </ButtonRow>
             </ProductInfoCard>
           </VideoItem>
             );
@@ -2123,7 +2468,15 @@ function App() {
               onClick={() => handleCategoryClick(cat.label)}
               className={activeCategoryButton === cat.label ? 'active' : ''}
             >
-              <img src={cat.icon} alt={cat.label} width="20" height="20" style={{ display: 'block' }} />
+              <img 
+                src={cat.icon} 
+                alt={cat.label} 
+                style={{ 
+                  display: 'block',
+                  width: 'clamp(16px, 4vw, 20px)',
+                  height: 'clamp(16px, 4vw, 20px)'
+                }} 
+              />
             </CatBtn>
           ))}
           <BottomShowAll 
@@ -2132,8 +2485,40 @@ function App() {
             title="Show All Products"
             className={activeButton === 'showAll' ? 'active' : ''}
           >
-            <img src={miniLogoIcon} alt="Show All Products" />
+            <img 
+              src={miniLogoIcon} 
+              alt="Show All Products" 
+              style={{
+                width: 'clamp(16px, 4vw, 20px)',
+                height: 'clamp(16px, 4vw, 20px)',
+                objectFit: 'contain'
+              }}
+            />
           </BottomShowAll>
+          <CatBtn 
+            onClick={handleShowLikedProducts} 
+            aria-label="liked-products" 
+            title={`Liked Products (${getLikedProductsCount(likedProducts)})`}
+            className={activeButton === 'liked' ? 'active' : ''}
+            style={{
+              background: likedProducts.size > 0 
+                ? 'linear-gradient(135deg, #ff6b6b, #ee5a6f)' 
+                : 'rgba(255, 255, 255, 0.87)',
+              border: likedProducts.size > 0 
+                ? '2px solid rgba(255, 107, 107, 1)' 
+                : '1px solid rgb(255, 255, 255)'
+            }}
+          >
+            <img 
+              src={likedProducts.size > 0 ? heartOnIcon : heartIcon} 
+              alt="Liked Products" 
+              style={{ 
+                display: 'block',
+                width: 'clamp(16px, 4vw, 20px)',
+                height: 'clamp(16px, 4vw, 20px)'
+              }} 
+            />
+          </CatBtn>
           <BottomSearch 
             onClick={() => {
               setActiveButton('search');
@@ -2143,7 +2528,17 @@ function App() {
             aria-label="open-search"
             className={activeButton === 'search' ? 'active' : ''}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" /><path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" /></svg>
+            <svg 
+              style={{
+                width: 'clamp(16px, 4vw, 20px)',
+                height: 'clamp(16px, 4vw, 20px)'
+              }}
+              viewBox="0 0 24 24" 
+              fill="none"
+            >
+              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+              <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" />
+            </svg>
           </BottomSearch>
         </BottomCats>
       </BottomBar>
@@ -2257,6 +2652,49 @@ function App() {
         <Toast>
           {toastMessage}
         </Toast>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareModal onClick={() => setShowShareModal(false)}>
+          <ShareModalContent onClick={(e) => e.stopPropagation()}>
+            <ShareModalTitle>Share Product</ShareModalTitle>
+            <ShareOptions>
+              <ShareOption onClick={() => handleSocialShare('whatsapp')}>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                WhatsApp
+              </ShareOption>
+              <ShareOption onClick={() => handleSocialShare('telegram')}>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.559z"/>
+                </svg>
+                Telegram
+              </ShareOption>
+              <ShareOption onClick={() => handleSocialShare('facebook')}>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Facebook
+              </ShareOption>
+              <ShareOption onClick={() => handleSocialShare('twitter')}>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+                Twitter
+              </ShareOption>
+              <ShareOption onClick={() => handleSocialShare('copy')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy Link
+              </ShareOption>
+            </ShareOptions>
+            <CloseButton onClick={() => setShowShareModal(false)}>Close</CloseButton>
+          </ShareModalContent>
+        </ShareModal>
       )}
     </AppContainer>
   );

@@ -60,12 +60,17 @@ const VideoOverlay = styled.div`
 
 const CarouselDots = styled.div`
   position: absolute;
-  bottom: 90px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
-  z-index: 8;
+  z-index: 25;
+  pointer-events: auto;
+  
+  @media (max-width: 480px) {
+    bottom: 95px;
+  }
 `;
 
 const Dot = styled.div`

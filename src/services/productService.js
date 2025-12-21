@@ -397,6 +397,72 @@ export const productService = {
    * @param {string} currency - Currency code (USD, EUR, ILS, etc.)
    * @returns {Promise<Object>} All products response
    */
+  /**
+   * Get products by list of product IDs
+   * @param {Array<string>} productIds - Array of product IDs
+   * @param {string} currency - Currency code (default: 'USD')
+   * @returns {Promise<Object>} Products response
+   */
+  async getProductsByIds(productIds, currency = 'USD') {
+    try {
+      if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+        return {
+          products: [],
+          total: 0,
+          hasMore: false,
+          page: 1
+        };
+      }
+
+      console.log(`productService.getProductsByIds: Requesting ${productIds.length} products with currency: ${currency}`);
+      
+      const response = await api.post('/api/products/by-ids', {
+        product_ids: productIds,
+        currency: currency
+      });
+      
+      console.log('getProductsByIds response:', response.data);
+
+      // Handle the API response structure: {status: "success", data: {products: [...], total: 5, ...}}
+      let products = [];
+      let total = 0;
+
+      if (response.data && response.data.status === 'error') {
+        throw new Error(response.data.message || 'Failed to get products by IDs');
+      }
+
+      if (response.data && response.data.data && Array.isArray(response.data.data.products)) {
+        products = response.data.data.products;
+        total = response.data.data.total || 0;
+      } else if (Array.isArray(response.data.products)) {
+        products = response.data.products;
+        total = response.data.total || 0;
+      } else if (Array.isArray(response.data)) {
+        products = response.data;
+      }
+
+      console.log('Parsed products by IDs:', products.length, 'Total:', total);
+
+      return {
+        products,
+        hasMore: false,
+        total,
+        page: 1
+      };
+    } catch (error) {
+      console.error('Error getting products by IDs:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL
+      });
+      
+      throw error;
+    }
+  },
+
   async getAllProducts(currency = 'USD') {
     try {
       const response = await api.get('/api/products/all-batch', {
