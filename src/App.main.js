@@ -287,16 +287,17 @@ const ProductInfoCard = styled.div`
   /* Mobile: CRITICAL - Use fixed pixel values for BottomBar height to avoid viewport issues */
   /* BottomBar height is approximately 80px on mobile, use safe margin */
   @media (max-width: 768px) {
-    /* Use fixed 100px from bottom to ensure it's always above BottomBar (80px + 20px margin) */
-    bottom: 100px;
-    max-height: calc(100vh - 100px - 10px); /* 10px extra margin for safety */
+    /* Use fixed 140px from bottom to ensure it's always above BottomBar with buttons visible */
+    /* BottomBar (80px) + margin (60px) = 140px */
+    bottom: 140px;
+    max-height: calc(100vh - 140px - 10px); /* 10px extra margin for safety */
   }
   
   @media (max-width: 480px) {
     padding: clamp(10px, 2vw, 14px);
-    /* Small mobile: BottomBar might be slightly smaller, but use same safe value */
-    bottom: 100px;
-    max-height: calc(100vh - 100px - 10px);
+    /* Small mobile: Use same safe value to ensure buttons are fully visible */
+    bottom: 140px;
+    max-height: calc(100vh - 140px - 10px);
   }
   
   /* Responsive font size: reduce font size if content is long */
@@ -305,19 +306,19 @@ const ProductInfoCard = styled.div`
   /* Responsive padding: reduce padding on smaller screens */
   @media (max-height: 700px) {
     padding: 12px;
-    max-height: calc(100vh - 100px - 10px);
+    max-height: calc(100vh - 140px - 10px);
   }
   
   @media (max-height: 600px) {
     padding: 10px;
     font-size: clamp(0.75rem, 1.8vw, 0.875rem);
-    max-height: calc(100vh - 100px - 10px);
+    max-height: calc(100vh - 140px - 10px);
   }
   
   /* For very small heights, ensure it doesn't overlap BottomBar */
   @media (max-height: 500px) {
-    bottom: 100px;
-    max-height: calc(100vh - 100px - 5px);
+    bottom: 140px;
+    max-height: calc(100vh - 140px - 5px);
   }
 `;
 
