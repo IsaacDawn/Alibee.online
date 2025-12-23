@@ -18,8 +18,30 @@ const CarouselImage = styled.img`
   position: absolute;
   top: 0;
   left: 0;
-  opacity: ${props => props.$active ? 1 : 0};
-  transition: opacity 0.5s ease-in-out;
+  transform: translateX(${props => {
+    if (props.$isDragging) {
+      // During drag: calculate position based on current index and drag offset
+      const baseOffset = (props.$index - props.$currentIndex) * 100;
+      // Convert drag offset from pixels to percentage
+      const dragOffsetPercent = props.$containerWidth > 0 
+        ? (props.$dragOffset / props.$containerWidth) * 100 
+        : 0;
+      return `${baseOffset + dragOffsetPercent}%`;
+    }
+    // Normal state: show current image at 0%, previous at -100%, next at 100%
+    const offset = (props.$index - props.$currentIndex) * 100;
+    return `${offset}%`;
+  }});
+  opacity: ${props => {
+    // Show current, previous, and next images during drag or when active
+    if (props.$isDragging) {
+      const diff = Math.abs(props.$index - props.$currentIndex);
+      return diff <= 1 ? 1 : 0; // Show current, previous, and next
+    }
+    return props.$active ? 1 : 0;
+  }};
+  transition: ${props => props.$isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'};
+  will-change: transform;
 `;
 
 const CarouselVideo = styled.video`
@@ -30,8 +52,26 @@ const CarouselVideo = styled.video`
   position: absolute;
   top: 0;
   left: 0;
-  opacity: ${props => props.$active ? 1 : 0};
-  transition: opacity 0.5s ease-in-out;
+  transform: translateX(${props => {
+    if (props.$isDragging) {
+      const baseOffset = (props.$index - props.$currentIndex) * 100;
+      const dragOffsetPercent = props.$containerWidth > 0 
+        ? (props.$dragOffset / props.$containerWidth) * 100 
+        : 0;
+      return `${baseOffset + dragOffsetPercent}%`;
+    }
+    const offset = (props.$index - props.$currentIndex) * 100;
+    return `${offset}%`;
+  }});
+  opacity: ${props => {
+    if (props.$isDragging) {
+      const diff = Math.abs(props.$index - props.$currentIndex);
+      return diff <= 1 ? 1 : 0;
+    }
+    return props.$active ? 1 : 0;
+  }};
+  transition: ${props => props.$isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'};
+  will-change: transform;
 `;
 
 const VideoOverlay = styled.div`
@@ -141,6 +181,8 @@ const ProductImageCarouselTikTok = ({
   const [isAutoPlay, setIsAutoPlay] = useState(autoPlay);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   
   // Video control states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -172,7 +214,7 @@ const ProductImageCarouselTikTok = ({
   
   const videoRef = useRef(null);
   const carouselRef = useRef(null);
-  const isDragging = useRef(false);
+  const containerWidthRef = useRef(0);
   
   // Log loading status periodically
   useEffect(() => {
@@ -794,29 +836,101 @@ const ProductImageCarouselTikTok = ({
     setIsAutoPlay(false); // Stop auto-play when user manually navigates
   };
 
-  // Touch handlers for swipe functionality
+  // Touch handlers for drag functionality with smooth transition
   const handleTouchStart = (e) => {
+    if (mediaItems.length <= 1) return;
+    
+    const touch = e.touches ? e.touches[0] : e;
+    setTouchStart(touch.clientX);
     setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    setDragOffset(0);
+    setIsDragging(true);
+    setIsAutoPlay(false); // Stop auto-play when user starts dragging
+    
+    // Get container width for percentage calculation
+    if (carouselRef.current) {
+      containerWidthRef.current = carouselRef.current.offsetWidth;
+    }
   };
 
   const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    if (!isDragging || !touchStart || mediaItems.length <= 1) return;
+    
+    const touch = e.touches ? e.touches[0] : e;
+    const currentX = touch.clientX;
+    const diff = currentX - touchStart;
+    
+    // Calculate drag offset (limit to prevent over-dragging)
+    const maxDrag = containerWidthRef.current * 0.5; // Max 50% of container width
+    const limitedDiff = Math.max(-maxDrag, Math.min(maxDrag, diff));
+    setDragOffset(limitedDiff);
+    setTouchEnd(currentX);
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!isDragging || !touchStart) {
+      setIsDragging(false);
+      setDragOffset(0);
+      return;
+    }
     
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
+    if (mediaItems.length <= 1) {
+      setIsDragging(false);
+      setDragOffset(0);
+      return;
+    }
+    
+    const distance = touchStart - (touchEnd || touchStart);
+    const threshold = containerWidthRef.current * 0.25; // 25% of container width
+    
+    // Determine if we should switch to next/previous
+    if (Math.abs(distance) > threshold) {
+      if (distance > 0) {
+        // Swiped left (dragged right) - go to next
+        goToNext();
+      } else {
+        // Swiped right (dragged left) - go to previous
+        goToPrevious();
+      }
+    }
+    
+    // Reset drag state
+    setIsDragging(false);
+    setDragOffset(0);
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
 
-    if (isLeftSwipe) {
-      goToNext();
-    } else if (isRightSwipe) {
-      goToPrevious();
+  // Mouse handlers for desktop drag support
+  const handleMouseDown = (e) => {
+    if (mediaItems.length <= 1) return;
+    e.preventDefault();
+    handleTouchStart(e);
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      handleTouchMove(e);
     }
   };
+
+  const handleMouseUp = () => {
+    if (isDragging) {
+      handleTouchEnd();
+    }
+  };
+
+  // Add global mouse event listeners for drag
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, touchStart, touchEnd]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -854,13 +968,20 @@ const ProductImageCarouselTikTok = ({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      style={{ userSelect: 'none', touchAction: 'pan-y' }}
     >
       {/* Show video if it's the current active item and should be loaded */}
       {isVideoActive && shouldLoadFirstImage && (
         <CarouselVideo
           ref={videoRef}
           src={videoUrl}
-          $active={true}
+          $active={currentIndex === 0}
+          $index={0}
+          $currentIndex={currentIndex}
+          $isDragging={isDragging}
+          $dragOffset={dragOffset}
+          $containerWidth={containerWidthRef.current}
           muted={isMuted}
           loop
           playsInline
@@ -885,48 +1006,59 @@ const ProductImageCarouselTikTok = ({
         />
       )}
       
-      {/* Show images - only render loaded images */}
+      {/* Show images - render loaded images and adjacent images during drag */}
       {images.map((imageUrl, index) => {
         const imageIndex = videoUrl ? index + 1 : index; // Adjust index if video exists
         const isLoaded = loadedImages.has(imageUrl);
         const isCurrent = currentIndex === imageIndex;
+        const diff = Math.abs(imageIndex - currentIndex);
         
-        // Only render if image is loaded
-        // But if it's the current image and not loaded yet, show a placeholder
-        if (!isLoaded) {
-          if (isCurrent) {
-            // Show loading placeholder for current image
-            return (
-              <div
-                key={index}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-                  backgroundSize: '200% 100%',
-                  animation: 'loading 1.5s infinite',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#999',
-                  fontSize: '14px'
-                }}
-              >
-                <style>{`
-                  @keyframes loading {
-                    0% { background-position: 200% 0; }
-                    100% { background-position: -200% 0; }
-                  }
-                `}</style>
-                Loading image {index + 1}...
-              </div>
-            );
-          }
-          // Don't render placeholder for non-current images
+        // During drag, show current, previous, and next images (even if not fully loaded)
+        // Otherwise, only show current image if loaded
+        const shouldShow = isDragging 
+          ? (diff <= 1) // Show current, previous, and next during drag
+          : (isCurrent && isLoaded); // Only show current if loaded
+        
+        if (!shouldShow) {
           return null;
+        }
+        
+        // Show loading placeholder if not loaded
+        if (!isLoaded) {
+          return (
+            <div
+              key={index}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                backgroundSize: '200% 100%',
+                animation: 'loading 1.5s infinite',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#999',
+                fontSize: '14px',
+                transform: isDragging 
+                  ? `translateX(${((imageIndex - currentIndex) * 100) + (containerWidthRef.current > 0 ? (dragOffset / containerWidthRef.current) * 100 : 0)}%)`
+                  : `translateX(${(imageIndex - currentIndex) * 100}%)`,
+                opacity: isDragging ? (diff <= 1 ? 1 : 0) : (isCurrent ? 1 : 0),
+                transition: isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                willChange: 'transform'
+              }}
+            >
+              <style>{`
+                @keyframes loading {
+                  0% { background-position: 200% 0; }
+                  100% { background-position: -200% 0; }
+                }
+              `}</style>
+              Loading image {index + 1}...
+            </div>
+          );
         }
         
         return (
@@ -935,6 +1067,11 @@ const ProductImageCarouselTikTok = ({
             src={imageUrl}
             alt={`Product image ${index + 1}`}
             $active={isCurrent}
+            $index={imageIndex}
+            $currentIndex={currentIndex}
+            $isDragging={isDragging}
+            $dragOffset={dragOffset}
+            $containerWidth={containerWidthRef.current}
             loading="lazy"
           />
         );
