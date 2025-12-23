@@ -73,13 +73,21 @@ export const productService = {
         }
       });
 
-      console.log('productService sending params:', JSON.stringify(params, null, 2));
+      console.log('=== productService.getProducts DEBUG ===');
+      console.log('Sending params:', JSON.stringify(params, null, 2));
+      console.log('Category param:', params.category);
+      console.log('Full URL:', `${API_BASE_URL}/api/products/comprehensive-filter`);
+      
       const response = await api.get('/api/products/comprehensive-filter', {
         params
       });
       
-      console.log('Raw API response:', response);
+      console.log('--- Raw API Response ---');
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response data type:', typeof response.data);
       console.log('Response data:', response.data);
+      console.log('Response.data keys:', response.data ? Object.keys(response.data) : []);
 
       // Handle different response structures
       let products = [];
@@ -87,30 +95,61 @@ export const productService = {
       let total = 0;
       let page = 1;
 
+      console.log('--- Parsing Response Structure ---');
+      
       if (Array.isArray(response.data)) {
+        console.log('✓ Response.data is array');
         products = response.data;
       } else if (response.data && response.data.data && Array.isArray(response.data.data.products)) {
         // Handle the actual API response structure: {data: {products: [...], total: 40}, status: "success"}
+        console.log('✓ Response structure: response.data.data.products');
+        console.log('  Status:', response.data.status);
+        console.log('  Total in response:', response.data.data.total);
         products = response.data.data.products;
         total = response.data.data.total || 0;
         hasMore = products.length < total;
       } else if (response.data && Array.isArray(response.data.products)) {
+        console.log('✓ Response structure: response.data.products');
         products = response.data.products;
         hasMore = response.data.hasMore || false;
         total = response.data.total || 0;
         page = response.data.page || 1;
       } else if (response.data && Array.isArray(response.data.data)) {
+        console.log('✓ Response structure: response.data.data');
         products = response.data.data;
         hasMore = response.data.hasMore || false;
         total = response.data.total || 0;
         page = response.data.page || 1;
       } else {
-        console.log('Unexpected API response structure:', response.data);
-        console.log('Full response object:', response);
+        console.log('✗ Unexpected API response structure');
+        console.log('  Response.data type:', typeof response.data);
+        console.log('  Response.data:', response.data);
+        console.log('  Full response object:', response);
+        if (response.data && response.data.data) {
+          console.log('  Response.data.data:', response.data.data);
+          console.log('  Response.data.data type:', typeof response.data.data);
+          if (response.data.data.products) {
+            console.log('  Response.data.data.products type:', typeof response.data.data.products);
+            console.log('  Response.data.data.products is array?', Array.isArray(response.data.data.products));
+            console.log('  Response.data.data.products length:', response.data.data.products?.length);
+          }
+        }
         products = [];
       }
 
-      console.log('Parsed products:', products.length, 'Total:', total);
+      console.log('--- Parsing Result ---');
+      console.log('Parsed products count:', products.length);
+      console.log('Total:', total);
+      console.log('HasMore:', hasMore);
+      if (products.length > 0) {
+        console.log('First product sample:', {
+          product_id: products[0]?.product_id,
+          product_title: products[0]?.product_title?.substring(0, 50),
+          first_level_category_name: products[0]?.first_level_category_name,
+          second_level_category_name: products[0]?.second_level_category_name,
+        });
+      }
+      console.log('=== productService.getProducts DEBUG END ===');
 
       return {
         products,

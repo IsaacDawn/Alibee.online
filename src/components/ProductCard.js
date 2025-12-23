@@ -21,10 +21,27 @@ const CardContainer = styled.div`
 
 const ImageContainer = styled.div`
   position: relative;
-  width: 100%;
-  height: 250px;
   overflow: hidden;
   background: #333;
+  aspect-ratio: 1 / 1;
+  
+  /* Mobile (portrait/vertical): square based on width */
+  /* Width is 100% of container, height automatically equals width */
+  width: 100%;
+  
+  /* Desktop (landscape/horizontal): square based on height */
+  /* Height is constrained, width automatically equals height via aspect-ratio */
+  @media (min-width: 769px) {
+    width: auto;
+    height: min(50vh, 500px);
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  @media (min-width: 1200px) {
+    height: min(45vh, 600px);
+  }
 `;
 
 const ProductImage = styled.img`

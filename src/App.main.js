@@ -27,13 +27,16 @@ const AppContainer = styled.div`
 
 const VideoContainer = styled.div`
   scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
   overflow-y: auto;
   height: 100vh;
   touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const VideoItem = styled.div`
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   height: 100vh;
   position: relative;
   display: flex;
@@ -59,44 +62,116 @@ const ProductImageContainer = styled.div`
   border-radius: 0;
   box-shadow: none;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: clamp(3vh, 5vh, 5vh);
   transform: none;
   overflow: hidden;
   margin: 0;
+  
+  @media (max-width: 768px) {
+    padding-top: clamp(5vh, 8vh, 10vh);
+  }
+  
+  /* Tablet portrait: image starts from top */
+  @media (min-width: 769px) and (max-width: 1024px) and (orientation: portrait) {
+    padding-top: 0;
+  }
+  
+  /* Tablet landscape */
+  @media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    padding-top: clamp(2vh, 4vh, 5vh);
+  }
+  
+  /* Desktop */
+  @media (min-width: 1025px) {
+    padding-top: clamp(3vh, 5vh, 5vh);
+  }
 `;
 
 const ProductImage = styled.img`
   object-fit: cover;
   width: 90%;
   height: 90%;
-  border-radius: 1rem;
+  border-radius: clamp(0.5rem, 1.5vw, 1rem);
+  
+  @media (max-width: 480px) {
+    width: 95%;
+    height: 95%;
+    border-radius: clamp(0.4rem, 1.2vw, 0.8rem);
+  }
 `;
 
 const ImageFrame = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  
+  /* Mobile (portrait/vertical): square based on width */
+  /* Width is 100% of viewport, height automatically equals width */
+  width: 100%;
+  
+  /* When width > height (landscape): width is 2/3 of viewport width */
+  @media (min-aspect-ratio: 1/1) {
+    width: 66.666%;
+    max-width: 66.666vw;
+  }
+  
+  /* Desktop (landscape/horizontal): square based on height */
+  /* Height is constrained, width automatically equals height */
+  @media (min-width: 769px) {
+    width: auto;
+    height: min(50vh, 500px);
+    max-width: 100vw;
+  }
+  
+  /* Desktop landscape: width is 2/3 of viewport */
+  @media (min-width: 769px) and (orientation: landscape) {
+    width: 66.666%;
+    max-width: 66.666vw;
+    height: auto;
+  }
+  
+  @media (min-width: 1200px) {
+    height: min(45vh, 600px);
+    
+    @media (orientation: landscape) {
+      width: 66.666%;
+      max-width: 66.666vw;
+      height: auto;
+    }
+  }
 `;
 
 // Scene UI overlays (to match reference image)
 const SideActions = styled.div`
   position: absolute;
-  right: 16px;
+  right: clamp(8px, 2vw, 16px);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: clamp(10px, 2vw, 14px);
   z-index: 20;
+  pointer-events: auto;
+  
+  @media (max-width: 480px) {
+    right: clamp(6px, 1.5vw, 12px);
+    gap: clamp(8px, 1.5vw, 12px);
+  }
+  
+  @media (min-width: 769px) and (orientation: landscape) {
+    right: clamp(12px, 2.5vw, 20px);
+    gap: clamp(12px, 2.5vw, 16px);
+  }
 `;
 
 const ActionCircle = styled.button`
-  width: 56px;
-  height: 56px;
+  width: clamp(40px, 8vw, 56px);
+  height: clamp(40px, 8vw, 56px);
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.95);
@@ -109,22 +184,39 @@ const ActionCircle = styled.button`
   transition: transform 0.2s ease, background 0.2s ease;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  font-size: clamp(18px, 4vw, 24px);
 
   &:hover { transform: translateY(-2px) scale(1.05); background: #fff; }
   &:focus { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
   &:active { outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+  
+  @media (max-width: 480px) {
+    width: clamp(35px, 7vw, 48px);
+    height: clamp(35px, 7vw, 48px);
+    font-size: clamp(16px, 3.5vw, 20px);
+  }
+  
+  @media (min-width: 769px) and (orientation: landscape) {
+    width: clamp(48px, 6vw, 60px);
+    height: clamp(48px, 6vw, 60px);
+    font-size: clamp(20px, 3vw, 26px);
+  }
 `;
 
 const ActionCount = styled.div`
   color: #fff;
-  font-size: 12px;
+  font-size: clamp(10px, 2vw, 12px);
   font-weight: 700;
   text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  
+  @media (max-width: 480px) {
+    font-size: clamp(9px, 1.8vw, 11px);
+  }
 `;
 
 const NonInteractiveCircle = styled.div`
-  width: 56px;
-  height: 56px;
+  width: clamp(40px, 8vw, 56px);
+  height: clamp(40px, 8vw, 56px);
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.95);
@@ -132,78 +224,146 @@ const NonInteractiveCircle = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 2px;
+  gap: clamp(1px, 0.3vw, 2px);
   color: #111;
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   pointer-events: none; /* not touchable */
+  font-size: clamp(10px, 2vw, 12px);
+  
+  @media (max-width: 480px) {
+    width: clamp(35px, 7vw, 48px);
+    height: clamp(35px, 7vw, 48px);
+    font-size: clamp(9px, 1.8vw, 11px);
+  }
+  
+  @media (min-width: 769px) and (orientation: landscape) {
+    width: clamp(48px, 6vw, 60px);
+    height: clamp(48px, 6vw, 60px);
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
 `;
 
 const ProductInfoCard = styled.div`
   position: absolute;
-  left: 16px;
-  right: 96px;
-  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
   background: rgba(7, 33, 33, 0.2);
   color: #fff;
-  border-radius: 5px;
-  padding: 18px;
+  border-radius: clamp(4px, 1vw, 5px);
+  padding: clamp(12px, 2.5vw, 18px);
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 18px 50px rgba(0,0,0,0.35);
   backdrop-filter: blur(3px);
   display: flex;
   flex-direction: column;
   z-index: 50;
+  overflow: hidden;
+  
+  /* Position from bottom to stay above BottomBar, even if it overlaps image */
+  bottom: calc(clamp(70px, 10vh, 80px) + 10px);
+  max-height: calc(100vh - clamp(70px, 10vh, 80px) - 20px);
+  
+  /* Match ImageFrame width: 100% on mobile */
+  
+  /* When width > height (landscape): match ImageFrame width (66.666%) */
+  @media (min-aspect-ratio: 1/1) {
+    width: 66.666%;
+    max-width: 66.666vw;
+  }
+  
+  /* Desktop: match ImageFrame width */
+  @media (min-width: 769px) {
+    /* In desktop, ImageFrame has width: auto and height: min(50vh, 500px) */
+    /* Since aspect-ratio is 1:1, width equals height */
+    /* But in landscape, ImageFrame has width: 66.666% */
+    width: 66.666%;
+    max-width: 66.666vw;
+  }
+  
+  /* Desktop landscape: match ImageFrame width (66.666%) */
+  @media (min-width: 769px) and (orientation: landscape) {
+    width: 66.666%;
+    max-width: 66.666vw;
+  }
   
   @media (max-width: 480px) {
-    bottom: 120px;
-    left: 12px;
-    right: 80px;
-    padding: 14px;
+    padding: clamp(10px, 2vw, 14px);
+    bottom: calc(clamp(60px, 9vh, 70px) + 10px);
+    max-height: calc(100vh - clamp(60px, 9vh, 70px) - 20px);
+  }
+  
+  /* Responsive font size: reduce font size if content is long */
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  
+  /* Responsive padding: reduce padding on smaller screens */
+  @media (max-height: 700px) {
+    padding: 12px;
+    max-height: calc(100vh - clamp(70px, 10vh, 80px) - 15px);
+  }
+  
+  @media (max-height: 600px) {
+    padding: 10px;
+    font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+    max-height: calc(100vh - clamp(70px, 10vh, 80px) - 10px);
+  }
+  
+  /* For very small heights, allow overlap with image */
+  @media (max-height: 500px) {
+    bottom: calc(clamp(70px, 10vh, 80px) + 5px);
+    max-height: calc(100vh - clamp(70px, 10vh, 80px) - 5px);
   }
 `;
 
 const ProductTitleText = styled.h3`
-  margin: 0 0 10px 0;
-  font-size: 18px;
+  margin: 0 0 clamp(6px, 1.2vw, 10px) 0;
+  font-size: clamp(0.875rem, 2.5vw, 1.125rem);
   font-weight: 700;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const PriceRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: clamp(8px, 1.5vw, 12px);
+  margin-bottom: clamp(6px, 1.2vw, 10px);
 `;
 
 const PriceNew = styled.span`
   color: #4ecdc4;
-  font-size: 18px;
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
   font-weight: 800;
 `;
 
 const PriceOld = styled.span`
   color: #f59e9e;
   text-decoration: line-through;
-  font-size: 14px;
+  font-size: clamp(0.75rem, 2vw, 0.875rem);
 `;
 
 const BuyBtn = styled.button`
   background: linear-gradient(135deg, #4ecdc4, #44a08d);
   color: #fff;
   border: none;
-  padding: 12px 22px;
-  border-radius: 8px;
+  padding: clamp(10px, 1.8vw, 12px) clamp(18px, 3vw, 22px);
+  border-radius: clamp(6px, 1.5vw, 8px);
   font-weight: 700;
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 8px 24px rgba(78,205,196,0.35);
   align-self: flex-start;
-  margin-top: 8px;
+  margin-top: clamp(6px, 1.2vw, 8px);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: clamp(6px, 1.2vw, 8px);
 
   &:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(78,205,196,0.5); }
 `;
@@ -212,31 +372,34 @@ const ShareBtn = styled.button`
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
   border: none;
-  padding: 12px 22px;
-  border-radius: 8px;
+  padding: clamp(10px, 1.8vw, 12px) clamp(18px, 3vw, 22px);
+  border-radius: clamp(6px, 1.5vw, 8px);
   font-weight: 700;
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 8px 24px rgba(102,126,234,0.35);
   align-self: flex-start;
-  margin-top: 8px;
+  margin-top: clamp(6px, 1.2vw, 8px);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: clamp(6px, 1.2vw, 8px);
 
   &:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(102,126,234,0.5); }
 `;
 
 const ButtonRow = styled.div`
   display: flex;
-  gap: 8px;
+  gap: clamp(6px, 1.2vw, 8px);
   width: 100%;
-  margin-top: 8px;
+  margin-top: clamp(6px, 1.2vw, 8px);
   
   button {
     flex: 1;
+    font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+    padding: clamp(8px, 1.5vw, 12px);
   }
 `;
 
@@ -245,14 +408,14 @@ const BottomBar = styled.div`
   left: 0; 
   right: 0; 
   bottom: 0;
-  height: 80px;
-  min-height: 80px;
+  height: clamp(70px, 10vh, 80px);
+  min-height: clamp(70px, 10vh, 80px);
   background: rgba(0,0,0,0.8);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
+  padding: clamp(6px, 1.5vw, 8px) clamp(12px, 2vw, 16px);
   border-top: 1px solid rgba(255,255,255,0.1);
   z-index: 25;
   width: 100%;
@@ -261,26 +424,26 @@ const BottomBar = styled.div`
   box-sizing: border-box;
   
   @media (max-width: 768px) {
-    padding: 8px 12px;
+    padding: clamp(6px, 1.2vw, 8px) clamp(10px, 1.8vw, 12px);
   }
   
   @media (max-width: 480px) {
-    padding: 8px 8px;
-    height: 70px;
-    min-height: 70px;
+    padding: clamp(6px, 1vw, 8px);
+    height: clamp(60px, 9vh, 70px);
+    min-height: clamp(60px, 9vh, 70px);
   }
 `;
 
 const BottomCats = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: clamp(4px, 1.2vw, 8px);
   justify-content: center;
   width: 100%;
   max-width: 100%;
   height: 100%;
-  min-height: 64px;
-  padding: 8px 0;
+  min-height: clamp(56px, 8vh, 64px);
+  padding: clamp(6px, 1.2vw, 8px) 0;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none; /* Firefox */
@@ -291,38 +454,12 @@ const BottomCats = styled.div`
   &::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
   }
-  
-  /* Responsive adjustments - always centered */
-  @media (max-width: 1024px) {
-    gap: 6px;
-    padding: 8px 4px;
-    justify-content: center;
-  }
-  
-  @media (max-width: 768px) {
-    gap: 5px;
-    padding: 8px 2px;
-    justify-content: center;
-  }
-  
-  @media (max-width: 480px) {
-    gap: 4px;
-    padding: 8px 2px;
-    min-height: 56px;
-    justify-content: center;
-  }
-  
-  @media (max-width: 360px) {
-    gap: 3px;
-    padding: 8px 1px;
-    justify-content: center;
-  }
 `;
 
 const CatBtn = styled.button`
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
+  width: clamp(36px, 8vw, 44px);
+  height: clamp(36px, 8vw, 44px);
+  min-width: clamp(36px, 8vw, 44px);
   border-radius: 50%;
   border: 1px solid rgb(255, 255, 255);
   background: rgba(255, 255, 255, 0.87);
@@ -338,50 +475,29 @@ const CatBtn = styled.button`
   box-sizing: border-box;
   position: relative;
   z-index: 30;
+  font-size: clamp(16px, 3.5vw, 20px);
 
   &:hover { transform: translateY(-2px) scale(1.05); background: rgba(78,205,196,0.9); }
   &:focus { outline: none; box-shadow: none; }
   &:active { outline: none; box-shadow: none; }
   
   &.active {
-    border: 2px solid rgba(78, 205, 196, 1);
-    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3), 0 0 0 5px rgba(78, 205, 196, 0.15);
+    border: clamp(1.5px, 0.4vw, 2px) solid rgba(78, 205, 196, 1);
+    box-shadow: 0 0 0 clamp(2px, 0.5vw, 3px) rgba(78, 205, 196, 0.3), 0 0 0 clamp(3px, 0.8vw, 5px) rgba(78, 205, 196, 0.15);
     background: rgba(78, 205, 196, 0.95);
   }
   
-  @media (max-width: 1024px) {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-  }
-  
-  @media (max-width: 768px) {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-  }
-  
   @media (max-width: 480px) {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    
     &.active {
-      box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.3), 0 0 0 4px rgba(78, 205, 196, 0.15);
+      box-shadow: 0 0 0 clamp(1.5px, 0.4vw, 2px) rgba(78, 205, 196, 0.3), 0 0 0 clamp(2.5px, 0.6vw, 4px) rgba(78, 205, 196, 0.15);
     }
-  }
-  
-  @media (max-width: 360px) {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
   }
 `;
 
 const BottomSearch = styled.button`
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
+  width: clamp(36px, 8vw, 44px);
+  height: clamp(36px, 8vw, 44px);
+  min-width: clamp(36px, 8vw, 44px);
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.2);
   background: rgba(78,205,196,0.95);
@@ -398,6 +514,7 @@ const BottomSearch = styled.button`
   box-sizing: border-box;
   position: relative;
   z-index: 30;
+  font-size: clamp(16px, 3.5vw, 20px);
 
   &:focus { outline: none; box-shadow: 0 10px 30px rgba(78,205,196,0.4); }
   &:active { outline: none; box-shadow: 0 10px 30px rgba(78,205,196,0.4); }
@@ -405,44 +522,22 @@ const BottomSearch = styled.button`
   &:hover { transform: translateY(-2px) scale(1.05); }
   
   &.active {
-    border: 2px solid rgba(78, 205, 196, 1);
-    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3), 0 0 0 5px rgba(78, 205, 196, 0.15), 0 10px 30px rgba(78,205,196,0.4);
+    border: clamp(1.5px, 0.4vw, 2px) solid rgba(78, 205, 196, 1);
+    box-shadow: 0 0 0 clamp(2px, 0.5vw, 3px) rgba(78, 205, 196, 0.3), 0 0 0 clamp(3px, 0.8vw, 5px) rgba(78, 205, 196, 0.15), 0 10px 30px rgba(78,205,196,0.4);
     background: rgba(78, 205, 196, 1);
   }
   
-  @media (max-width: 1024px) {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-  }
-  
-  @media (max-width: 768px) {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-  }
-  
   @media (max-width: 480px) {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    
     &.active {
-      box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.3), 0 0 0 4px rgba(78, 205, 196, 0.15), 0 10px 30px rgba(78,205,196,0.4);
+      box-shadow: 0 0 0 clamp(1.5px, 0.4vw, 2px) rgba(78, 205, 196, 0.3), 0 0 0 clamp(2.5px, 0.6vw, 4px) rgba(78, 205, 196, 0.15), 0 10px 30px rgba(78,205,196,0.4);
     }
-  }
-  
-  @media (max-width: 360px) {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
   }
 `;
 
 const BottomShowAll = styled.button`
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
+  width: clamp(36px, 8vw, 44px);
+  height: clamp(36px, 8vw, 44px);
+  min-width: clamp(36px, 8vw, 44px);
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.2);
   background: linear-gradient(135deg, #ff8c42,rgb(218, 255, 53));
@@ -456,7 +551,7 @@ const BottomShowAll = styled.button`
   flex-shrink: 0;
   outline: none;
   -webkit-tap-highlight-color: transparent;
-  padding: 4px;
+  padding: clamp(3px, 0.8vw, 4px);
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
@@ -485,37 +580,15 @@ const BottomShowAll = styled.button`
   }
   
   &.active {
-    border: 2px solid rgba(255, 140, 66, 1);
-    box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.3), 0 0 0 5px rgba(255, 140, 66, 0.15), 0 10px 30px rgba(255, 140, 66, 0.4);
+    border: clamp(1.5px, 0.4vw, 2px) solid rgba(255, 140, 66, 1);
+    box-shadow: 0 0 0 clamp(2px, 0.5vw, 3px) rgba(255, 140, 66, 0.3), 0 0 0 clamp(3px, 0.8vw, 5px) rgba(255, 140, 66, 0.15), 0 10px 30px rgba(255, 140, 66, 0.4);
     transform: none;
   }
   
-  @media (max-width: 1024px) {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-  }
-  
-  @media (max-width: 768px) {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-  }
-  
   @media (max-width: 480px) {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    
     &.active {
-      box-shadow: 0 0 0 2px rgba(255, 140, 66, 0.3), 0 0 0 4px rgba(255, 140, 66, 0.15), 0 10px 30px rgba(255, 140, 66, 0.4);
+      box-shadow: 0 0 0 clamp(1.5px, 0.4vw, 2px) rgba(255, 140, 66, 0.3), 0 0 0 clamp(2.5px, 0.6vw, 4px) rgba(255, 140, 66, 0.15), 0 10px 30px rgba(255, 140, 66, 0.4);
     }
-  }
-  
-  @media (max-width: 360px) {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
   }
 `;
 
@@ -1299,31 +1372,41 @@ function App() {
     localStorage.setItem('alibee_liked_products', JSON.stringify(likedArray));
   }, [likedProducts]);
 
-  // Load categories on mount
+  // Load categories on mount - with retry logic
   useEffect(() => {
+    let retryCount = 0;
+    const maxRetries = 3;
+    
     const loadCategories = async () => {
       try {
-        console.log('Loading categories...');
+        console.log(`[Categories] Loading categories... (attempt ${retryCount + 1}/${maxRetries + 1})`);
         const categoriesData = await productService.getCategories();
         if (Array.isArray(categoriesData) && categoriesData.length > 0) {
           setCategories(categoriesData);
-          console.log('Categories loaded successfully:', categoriesData.length);
+          console.log(`[Categories] ✓ Loaded ${categoriesData.length} categories:`, categoriesData.map(c => c.name).join(', '));
         } else {
+          console.warn('[Categories] ⚠ No categories returned from API');
           setCategories([]);
-          console.log('No categories found');
+          // Retry if no categories found
+          if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(() => loadCategories(), 1000 * retryCount);
+          }
         }
       } catch (err) {
-        console.error('Failed to load categories:', err);
-        setCategories([]);
+        console.error(`[Categories] ✗ Failed to load categories (attempt ${retryCount + 1}):`, err);
+        // Retry on error
+        if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(() => loadCategories(), 1000 * retryCount);
+        } else {
+          setCategories([]);
+        }
       }
     };
     
-    // Add a small delay to avoid race conditions with products loading
-    const timer = setTimeout(() => {
-      loadCategories();
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    // Load immediately, no delay
+    loadCategories();
   }, []);
 
   // Load initial products
@@ -1883,12 +1966,12 @@ function App() {
   };
 
   const handleShowAllProducts = useCallback(async () => {
-    console.log('Show all products clicked');
+    console.log('[ShowAll] Show all products clicked');
     setActiveButton('showAll');
     setActiveCategoryButton(null); // Clear category button selection
     setLoading(true);
     setError(null);
-    setSelectedCategory('');
+    setSelectedCategory('all'); // Use 'all' explicitly instead of empty string
     setCurrentProductIndex(0);
     setMinPrice(0);
     setMaxPrice(100000);
@@ -1901,11 +1984,34 @@ function App() {
     }
 
     try {
-      const response = await productService.getAllProducts(selectedCurrency);
-      console.log('All products response:', response);
+      // Use comprehensive-filter with category='all' instead of getAllProducts
+      // This ensures consistent behavior
+      const apiParams = {
+        category: 'all',
+        sort_order: 'asc',
+        currency: selectedCurrency,
+        limit: 100,
+        min_price: 0,
+        max_price: 100000,
+        JustVideo: 0
+      };
+      
+      console.log('[ShowAll] Loading all products with params:', apiParams);
+      const response = await productService.getProducts(apiParams);
+      console.log('[ShowAll] Response:', response);
+
+      // Handle the response from productService
+      let allProducts = [];
+      if (response && response.products && Array.isArray(response.products)) {
+        allProducts = response.products;
+        console.log(`[ShowAll] ✓ Found ${allProducts.length} products`);
+      } else {
+        console.log('[ShowAll] ✗ No products in response:', response);
+        allProducts = [];
+      }
 
       // Transform products to match the expected format
-      const transformedProducts = (response.products || []).map(product => {
+      const transformedProducts = allProducts.map(product => {
         // Parse discount percentage
         let discountPercentage = 0;
         if (product.discount) {
@@ -2069,35 +2175,128 @@ function App() {
     }
   }, [selectedCurrency]);
 
+  // Ref to prevent multiple simultaneous category clicks
+  const categoryClickInProgressRef = useRef(false);
+  
   const handleCategoryClick = useCallback(async (category) => {
-    console.log('Category clicked:', category);
-    setActiveButton('category');
-    setActiveCategoryButton(category); // Track which category button is clicked
-    // Map category labels to API category names
-    const categoryMap = {
-      'car': 'Automobiles, Parts & Accessories'
-    };
-    
-    // Use mapped category if available, otherwise use the label directly
-    const apiCategory = categoryMap[category] || category;
-    
-    // Set the selected category
-    setSelectedCategory(apiCategory);
-    
-    // Clear all products and reset scroll
-    setProducts([]);
-    setDisplayedProducts([]);
-    setCurrentProductIndex(0);
-    setLoading(true);
-    setError(null);
-    
-    // Scroll to top
-    if (videoContainerRef.current) {
-      videoContainerRef.current.scrollTop = 0;
+    // Prevent multiple simultaneous clicks
+    if (categoryClickInProgressRef.current) {
+      console.log('[CategoryClick] ⚠ Another category click in progress, ignoring...');
+      return;
     }
     
-    // Load products directly with the new category
+    categoryClickInProgressRef.current = true;
+    
     try {
+      console.log('=== CATEGORY CLICK DEBUG START ===');
+      console.log('[CategoryClick] Category clicked (label):', category);
+      console.log('[CategoryClick] Available categories from API:', categories);
+      console.log('[CategoryClick] Categories count:', categories?.length || 0);
+      
+      setActiveButton('category');
+      setActiveCategoryButton(category); // Track which category button is clicked
+      
+      // Map category labels to exact database category names
+      // Database categories: fashion, car accessories, jewelery, cellphone, shoes
+      // IMPORTANT: Use exact names from database for reliable matching
+      const categoryMap = {
+        'car': 'car accessories',
+        'fashion': 'fashion',
+        'jewelry': 'jewelery', // Note: database has "jewelery" (one 'l')
+        'mobile': 'cellphone',
+        'shoe': 'shoes'
+      };
+      
+      let apiCategory = categoryMap[category] || category;
+      console.log(`[CategoryClick] Initial mapping: "${category}" -> "${apiCategory}"`);
+      
+      // CRITICAL: Always use exact name from loaded categories if available
+      // Backend uses 'in' operator, so we need exact or very close match
+      if (categories && categories.length > 0) {
+        console.log('[CategoryClick] Available category names:', categories.map(c => c.name).join(', '));
+        
+        // First: Try exact match (case-insensitive, trimmed)
+        let foundCategory = categories.find(cat => {
+          if (!cat.name) return false;
+          return cat.name.toLowerCase().trim() === apiCategory.toLowerCase().trim();
+        });
+        
+        // Second: Try word-by-word matching for multi-word categories
+        if (!foundCategory && apiCategory.includes(' ')) {
+          const apiWords = apiCategory.toLowerCase().split(/\s+/);
+          foundCategory = categories.find(cat => {
+            if (!cat.name) return false;
+            const catWords = cat.name.toLowerCase().split(/\s+/);
+            // Check if all words in apiCategory exist in category name
+            return apiWords.every(word => catWords.some(catWord => catWord.includes(word) || word.includes(catWord)));
+          });
+        }
+        
+        // Third: Try reverse partial match (category name contains our search term)
+        if (!foundCategory) {
+          foundCategory = categories.find(cat => {
+            if (!cat.name) return false;
+            const catNameLower = cat.name.toLowerCase();
+            const apiCategoryLower = apiCategory.toLowerCase();
+            // Check if category name contains our search term or vice versa
+            const matches = catNameLower.includes(apiCategoryLower) || apiCategoryLower.includes(catNameLower);
+            if (matches) {
+              console.log(`[CategoryClick]   Partial match: "${cat.name}" contains "${apiCategory}"`);
+            }
+            return matches;
+          });
+        }
+        
+        if (foundCategory) {
+          apiCategory = foundCategory.name; // Use EXACT name from database
+          console.log(`[CategoryClick] ✓ Found match in database: "${apiCategory}"`);
+        } else {
+          console.log(`[CategoryClick] ⚠ Category "${apiCategory}" not found in database`);
+          console.log('[CategoryClick]   Available categories:', categories.map(c => c.name));
+          console.log('[CategoryClick]   Searching for similar categories...');
+          
+          // Debug: Show what we're searching for vs what's available
+          const apiCategoryLower = apiCategory.toLowerCase();
+          categories.forEach(cat => {
+            if (cat.name) {
+              const catNameLower = cat.name.toLowerCase();
+              const similarity = {
+                exact: catNameLower === apiCategoryLower,
+                contains: catNameLower.includes(apiCategoryLower),
+                contained: apiCategoryLower.includes(catNameLower),
+                firstWord: catNameLower.split(/\s+/)[0] === apiCategoryLower.split(/\s+/)[0]
+              };
+              if (similarity.exact || similarity.contains || similarity.contained || similarity.firstWord) {
+                console.log(`[CategoryClick]   Similar category found: "${cat.name}"`, similarity);
+              }
+            }
+          });
+          
+          console.log('[CategoryClick]   Will use mapped name - backend will try partial matching');
+        }
+      } else {
+        console.log('[CategoryClick] ⚠ Categories not loaded yet');
+        console.log('[CategoryClick]   Using mapped name - will retry when categories load');
+      }
+      
+      console.log(`[CategoryClick] ✓ Final API category name: "${apiCategory}"`);
+      
+      // Set the selected category
+      setSelectedCategory(apiCategory);
+      
+      // Clear all products and reset scroll
+      setProducts([]);
+      setDisplayedProducts([]);
+      setCurrentProductIndex(0);
+      setLoading(true);
+      setError(null);
+      
+      // Scroll to top
+      if (videoContainerRef.current) {
+        videoContainerRef.current.scrollTop = 0;
+      }
+      
+      // Load products directly with the new category
       const apiParams = {
         category: apiCategory,
         sort_order: sortOrder,
@@ -2108,17 +2307,66 @@ function App() {
         JustVideo: justVideo ? 1 : 0
       };
       
-      console.log('Category click API Parameters:', JSON.stringify(apiParams, null, 2));
+      console.log('--- API Request ---');
+      console.log('[CategoryClick] Original label:', category);
+      console.log('[CategoryClick] Mapped category:', apiCategory);
+      console.log('[CategoryClick] API Parameters:', JSON.stringify(apiParams, null, 2));
+      console.log('[CategoryClick] Category param value:', `"${apiParams.category}"`);
+      console.log('[CategoryClick] Category param length:', apiParams.category?.length);
+      console.log('[CategoryClick] Category param type:', typeof apiParams.category);
+      console.log('[CategoryClick] Full URL:', `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products/comprehensive-filter?${new URLSearchParams(apiParams).toString()}`);
+      
       const response = await productService.getProducts(apiParams);
-      console.log('Category click API Response:', response);
+      
+      console.log('--- API Response ---');
+      console.log('[CategoryClick] Response object:', response);
+      console.log('[CategoryClick] Response.products type:', typeof response?.products);
+      console.log('[CategoryClick] Response.products is array?', Array.isArray(response?.products));
+      console.log('[CategoryClick] Response.products length:', response?.products?.length || 0);
+      
+      if (response?.products && response.products.length > 0) {
+        console.log('[CategoryClick] ✓ Products found! First product sample:', {
+          product_id: response.products[0]?.product_id,
+          product_title: response.products[0]?.product_title?.substring(0, 50),
+          first_level_category_name: response.products[0]?.first_level_category_name,
+          second_level_category_name: response.products[0]?.second_level_category_name,
+        });
+        
+        // Debug: Check category matching in returned products
+        const categoryLower = apiCategory.toLowerCase();
+        const matchingProducts = response.products.filter(p => {
+          const firstLevel = (p.first_level_category_name || '').toLowerCase();
+          const secondLevel = (p.second_level_category_name || '').toLowerCase();
+          return firstLevel.includes(categoryLower) || secondLevel.includes(categoryLower);
+        });
+        console.log(`[CategoryClick] Products matching "${apiCategory}": ${matchingProducts.length}/${response.products.length}`);
+        
+        // Show unique category names in returned products
+        const uniqueCategories = new Set();
+        response.products.forEach(p => {
+          if (p.first_level_category_name) uniqueCategories.add(p.first_level_category_name);
+          if (p.second_level_category_name) uniqueCategories.add(p.second_level_category_name);
+        });
+        console.log('[CategoryClick] Unique category names in returned products:', Array.from(uniqueCategories));
+      } else {
+        console.log('[CategoryClick] ✗ NO PRODUCTS FOUND');
+        console.log('[CategoryClick] This means backend did not find any products matching:', apiCategory);
+      }
 
       // Handle the response from productService
       let allProducts = [];
       if (response && response.products && Array.isArray(response.products)) {
         allProducts = response.products;
-        console.log('Category click found products:', allProducts.length);
+        console.log(`✓ Successfully parsed ${allProducts.length} products`);
       } else {
-        console.log('Category click no products found in response:', response);
+        console.log('✗ No products in response');
+        console.log('Response structure:', {
+          hasResponse: !!response,
+          hasProducts: !!(response?.products),
+          productsIsArray: Array.isArray(response?.products),
+          responseKeys: response ? Object.keys(response) : [],
+          fullResponse: response
+        });
         allProducts = [];
       }
 
@@ -2126,13 +2374,33 @@ function App() {
       setDisplayedProducts(allProducts.slice(0, initialLoadCount));
       setCurrentProductIndex(0);
       setHasMore(allProducts.length > initialLoadCount);
+      
+      // Show message if no products found
+      if (allProducts.length === 0) {
+        console.log('⚠ No products found - showing toast message');
+        setToastMessage(`No products found for "${apiCategory}". Try another category.`);
+        setTimeout(() => setToastMessage(''), 4000);
+      } else {
+        console.log(`✓ Successfully loaded ${allProducts.length} products`);
+      }
     } catch (err) {
+      console.error('✗ ERROR in category click:', err);
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: err.config?.url,
+        baseURL: err.config?.baseURL
+      });
       setError(err.message || 'Failed to load products');
-      console.error('Error in category click:', err);
+      setToastMessage(`Error: ${err.message}`);
+      setTimeout(() => setToastMessage(''), 4000);
     } finally {
       setLoading(false);
+      categoryClickInProgressRef.current = false; // Reset flag
+      console.log('=== CATEGORY CLICK DEBUG END ===');
     }
-  }, [sortOrder, minPrice, maxPrice, justVideo, selectedCurrency, initialLoadCount]);
+  }, [sortOrder, minPrice, maxPrice, justVideo, selectedCurrency, initialLoadCount, categories]);
 
   const handleCurrencyChange = (newCurrency) => {
     console.log('Currency changed from', selectedCurrency, 'to', newCurrency);
@@ -2344,11 +2612,9 @@ function App() {
                           shouldLoadFirstImage={shouldLoadFirstImage}
                           loadPriority={loadPriority}
                         />
-                      </ImageFrame>
-                    </ProductImageContainer>
-            {/* Side actions */}
-            {(() => { const liked = likedProducts.has(product.product_id); return (
-            <SideActions>
+                        {/* Side actions - positioned relative to ImageFrame */}
+                        {(() => { const liked = likedProducts.has(product.product_id); return (
+                        <SideActions>
               <button 
                 onClick={() => handleLike(index)} 
                 aria-label="like" 
@@ -2408,8 +2674,10 @@ function App() {
                   </div>
                 );
               })()}
-            </SideActions>
-            ); })()}
+                        </SideActions>
+                        ); })()}
+                      </ImageFrame>
+                    </ProductImageContainer>
 
             {/* Product card */}
             <ProductInfoCard>
@@ -2421,10 +2689,10 @@ function App() {
                 )}
               </PriceRow>
               <ButtonRow>
-                <BuyBtn onClick={() => handleBuyNow()}>
-                  <img src={cartIcon} alt="cart" width="18" height="18" style={{ display: 'block' }} />
+              <BuyBtn onClick={() => handleBuyNow()}>
+                <img src={cartIcon} alt="cart" width="18" height="18" style={{ display: 'block' }} />
                   Buy
-                </BuyBtn>
+              </BuyBtn>
                 <ShareBtn onClick={openShareModal}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="18" cy="5" r="3"></circle>
