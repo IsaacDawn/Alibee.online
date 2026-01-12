@@ -1,0 +1,23 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bee body -->
+  <ellipse cx="16" cy="18" rx="6" ry="8" fill="#FFD700" stroke="#000" stroke-width="0.8"/>
+  
+  <!-- Bee stripes -->
+  <ellipse cx="16" cy="14" rx="5" ry="1.5" fill="#000"/>
+  <ellipse cx="16" cy="21" rx="5" ry="1.5" fill="#000"/>
+  
+  <!-- Bee head -->
+  <circle cx="16" cy="10" r="5" fill="#FFD700" stroke="#000" stroke-width="0.8"/>
+  
+  <!-- Bee eyes -->
+  <circle cx="14" cy="8.5" r="1.2" fill="#000"/>
+  <circle cx="18" cy="8.5" r="1.2" fill="#000"/>
+  
+  <!-- Bee antennae -->
+  <line x1="14" y1="6.5" x2="12" y2="4" stroke="#000" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="18" y1="6.5" x2="20" y2="4" stroke="#000" stroke-width="1.2" stroke-linecap="round"/>
+  
+  <!-- Bee wings -->
+  <ellipse cx="13" cy="13" rx="2.5" ry="4" fill="rgba(255,255,255,0.8)" stroke="#000" stroke-width="0.4"/>
+  <ellipse cx="19" cy="13" rx="2.5" ry="4" fill="rgba(255,255,255,0.8)" stroke="#000" stroke-width="0.4"/>
+</svg>
